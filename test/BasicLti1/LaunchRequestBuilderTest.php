@@ -66,6 +66,25 @@ class LaunchRequestBuilderTest extends TestCase {
 		}
 	}
 
+	/**
+	 * LaunchVerifier explicitly guards the receiving side against a non-string resource_link_id
+	 * (a repeated form/query parameter decodes to an array) - build() needs the same guard, or a
+	 * caller bug produces a spec-violating launch that gets silently signed instead of an early,
+	 * clear failure.
+	 */
+	public function testBuildThrowsWhenResourceLinkIdIsNotAString(): void {
+		$builder = new LaunchRequestBuilder(new RequestSigner(new HmacSha1Signer));
+
+		try {
+			$builder->build('http://example.com/launch', new Credentials('key', 'secret'), [
+				'resource_link_id' => [ 'not', 'a', 'string' ],
+			]);
+			$this->fail('Expected an InvalidLaunchException');
+		} catch ( InvalidLaunchException $exception ) {
+			$this->assertSame(LaunchValidationFailureReason::MissingResourceLinkId, $exception->getReason());
+		}
+	}
+
 	public function testBuildOverridesACallerSuppliedMessageTypeOrVersion(): void {
 		$builder = new LaunchRequestBuilder(new RequestSigner(new HmacSha1Signer));
 

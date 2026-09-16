@@ -577,6 +577,17 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
           intact, since that is always the first line - which is why the footer check exists
           too, confirmed directly against a real key cut in half.
         </li>
+        <li>
+          <strong>A malformed URL.</strong> <code>$url</code> is caller/attacker data of
+          unbounded length - on <code>RequestVerifier</code>'s side, straight from an incoming,
+          not-yet-validated request. Rather than truncate it for logging (as with
+          <code>oauth_consumer_key</code>), <code>SignatureBaseString</code>'s own
+          <code>SigningException</code> message deliberately never interpolates <code>$url</code>
+          at all, since the caller catching it already has the same value in scope - it is the
+          same argument they passed into <code>sign()</code>/<code>verify()</code>. Nothing is
+          lost, and nothing unbounded (PII included, if a caller built a malformed URL from user
+          input) reaches the log line that reports the exception.
+        </li>
       </ul>
       <p>
         Separately, <code>oauth_consumer_key</code> (in <code>RequestVerifier</code>) and
@@ -1005,7 +1016,7 @@ interface VerifierInterface {
     public function verify(string $baseString, Credentials $credentials, string $signature): bool
 
 }</div>
-      <p>Throws <a href="#Oauth1Exceptions"><code>SigningException</code></a> if the public key cannot be read - logging an <code>error</code> (<code>security_relevant: false</code>, carrying <code>PemPreview::describe()</code>'s header-plus-footer summary of the key, never any of its actual bytes) immediately before, and a <code>debug</code> trace once the key loads. See <a href="#Logging">Logging</a>.</p>
+      <p>Throws <a href="#Oauth1Exceptions"><code>SigningException</code></a> if the public key cannot be read, or if <code>openssl_verify()</code> itself rejects the input (e.g. a key of the wrong type/algorithm) rather than computing a signature and finding it did not match - logging an <code>error</code> (<code>security_relevant: false</code>) immediately before either way, and a <code>debug</code> trace once the key loads. Deliberately not collapsed into a returned <code>false</code>, which <code>RequestVerifier</code> would otherwise log and throw as <code>security_relevant: true</code> tampering, misreporting a key/config problem as an attack. See <a href="#Logging">Logging</a>.</p>
       <p class="back-to-index"><a href="#index">↑ back to index</a></p>
     </div>
 
@@ -1064,6 +1075,14 @@ interface VerifierInterface {
         check" the same as "checked and passed". Every one of those failures also logs an
         <code>error</code> immediately before throwing, and PLAINTEXT logs an <code>alert</code>
         on every call - see <a href="#Logging">Logging</a>.
+      </div>
+      <div class="alert-box">
+        <strong>The nonce is claimed only after the signature is proven genuine.</strong>
+        <code>oauth_nonce</code>/<code>oauth_timestamp</code>/<code>oauth_consumer_key</code> are
+        all plaintext request parameters, visible to anyone who can see the wire - claiming the
+        nonce before checking the signature would let an attacker who cannot sign anything still
+        burn a legitimate nonce with a forged request that copies them, denying the real request
+        that nonce belonged to. This ordering is deliberate, not incidental.
       </div>
       <div class="method-sig">final class RequestVerifier {
 
@@ -1219,7 +1238,7 @@ final class RandomNonceGenerator implements NonceGeneratorInterface {
     ): LaunchRequest
 
 }</div>
-      <p>Logs a <code>debug</code> trace on success, or an <code>error</code> (<code>security_relevant: false</code>) immediately before throwing <a href="#BasicLti1Exceptions"><code>InvalidLaunchException</code></a> for a missing <code>resource_link_id</code>. See <a href="#Logging">Logging</a>.</p>
+      <p>Logs a <code>debug</code> trace on success, or an <code>error</code> (<code>security_relevant: false</code>) immediately before throwing <a href="#BasicLti1Exceptions"><code>InvalidLaunchException</code></a> for a missing, empty, or non-string <code>resource_link_id</code> - the same guard <a href="#LaunchVerifier"><code>LaunchVerifier</code></a> applies on the receiving side, since nothing enforces this array's documented shape at a caller's own call site. See <a href="#Logging">Logging</a>.</p>
       <div class="alert-box">
         <strong>oauth_callback is deliberately not signed.</strong> It is added to the launch as a
         plain, unsigned parameter set to <code>about:blank</code> - not passed through

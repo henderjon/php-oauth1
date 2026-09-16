@@ -42,7 +42,13 @@ final class LaunchRequestBuilder {
 	 * @throws InvalidLaunchException
 	 */
 	public function build( string $launchUrl, Credentials $credentials, array $launchParameters ): LaunchRequest {
-		if ( ( $launchParameters[Launch::RESOURCE_LINK_ID_PARAM] ?? '' ) === '' ) {
+		// isValidResourceLinkId() takes `mixed`, not the array's own declared `string` value
+		// type - $launchParameters is documented as array<string,string>, but nothing in PHP
+		// enforces that shape at a caller's own call site (a caller building it from decoded
+		// JSON/form data, say), so this checks the real runtime value rather than trusting the
+		// PHPDoc contract at the one place it actually matters - mirroring LaunchVerifier's own
+		// guard on the receiving side, where the same value can genuinely arrive as an array.
+		if ( ! $this->isValidResourceLinkId($launchParameters[Launch::RESOURCE_LINK_ID_PARAM] ?? '') ) {
 			$this->logger->error('basiclti1.launch_build_failed', [
 				'consumer_key' => $credentials->consumerKey,
 				'reason' => LaunchValidationFailureReason::MissingResourceLinkId->name,
@@ -87,6 +93,10 @@ final class LaunchRequestBuilder {
 			...$signed->oauthParameters,
 			'oauth_callback' => 'about:blank',
 		]);
+	}
+
+	private function isValidResourceLinkId( mixed $value ): bool {
+		return is_string($value) && $value !== '';
 	}
 
 }

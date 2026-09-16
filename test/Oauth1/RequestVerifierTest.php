@@ -96,6 +96,37 @@ class RequestVerifierTest extends TestCase {
 		}
 	}
 
+	/**
+	 * A forged/corrupted request reusing a legitimate nonce, timestamp, and consumer key -
+	 * oauth_nonce/oauth_timestamp/oauth_consumer_key are all plaintext, visible to anyone who can
+	 * see the wire - must not burn that nonce. Otherwise an attacker with no ability to sign
+	 * anything could still deny the legitimate request that nonce belongs to, by sending a
+	 * forgery first: exactly the denial-of-service vector this class's own docblock now
+	 * documents.
+	 */
+	public function testVerifyDoesNotClaimTheNonceWhenTheSignatureIsInvalid(): void {
+		$clock      = new FixedClock(new \DateTimeImmutable('@137131201'));
+		$logger     = new ArrayLogger;
+		$verifier   = $this->verifier($clock, logger: $logger);
+		$parameters = $this->sign($clock);
+
+		$forged = $parameters;
+		$forged['oauth_signature'] = 'not-the-real-signature';
+
+		try {
+			$verifier->verify('POST', self::URL, $this->credentials(), $forged);
+			$this->fail('Expected a RequestVerificationException');
+		} catch ( RequestVerificationException $exception ) {
+			$this->assertSame(VerificationFailureReason::InvalidSignature, $exception->getReason());
+		}
+
+		// The genuinely signed request, reusing the same nonce/timestamp the forgery above
+		// copied, must still succeed - the forgery never actually claimed the nonce.
+		$verifier->verify('POST', self::URL, $this->credentials(), $parameters);
+
+		$this->assertSame('oauth1.request_verified', $logger->recordsAt('debug')[array_key_last($logger->recordsAt('debug'))]['message']);
+	}
+
 	public function testVerifyRejectsATimestampOutsideTheTolerance(): void {
 		$signedAt  = new FixedClock(new \DateTimeImmutable('@137131201'));
 		$checkedAt = new FixedClock(new \DateTimeImmutable('@137131601')); // 400s later
