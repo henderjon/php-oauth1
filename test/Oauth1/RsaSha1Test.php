@@ -86,7 +86,21 @@ class RsaSha1Test extends TestCase {
 			$this->assertSame('key', $errors[0]['context']['consumer_key']);
 			$this->assertFalse($errors[0]['context']['security_relevant']);
 			$this->assertSame('key', $exception->getConsumerKey());
-			$this->assertSame('(no PEM header found)', $errors[0]['context']['private_key_pem_header']);
+			$this->assertSame('(no PEM header found)', $errors[0]['context']['private_key_pem']);
+		}
+	}
+
+	public function testSignLogsAFooterMissingHintForATruncatedPrivateKey(): void {
+		[ $privateKeyPem ] = $this->generateKeyPair();
+		$truncated = substr($privateKeyPem, 0, (int) (strlen($privateKeyPem) / 2));
+		$logger    = new ArrayLogger;
+
+		try {
+			(new RsaSha1Signer($truncated, logger: $logger))->sign('base string', new Credentials('key'));
+			$this->fail('Expected a SigningException');
+		} catch ( SigningException ) {
+			$errors = $logger->recordsAt('error');
+			$this->assertStringContainsString('footer missing - likely truncated', $errors[0]['context']['private_key_pem']);
 		}
 	}
 
@@ -114,7 +128,21 @@ class RsaSha1Test extends TestCase {
 			$this->assertSame('oauth1.verifying_failed', $errors[0]['message']);
 			$this->assertFalse($errors[0]['context']['security_relevant']);
 			$this->assertSame('key', $exception->getConsumerKey());
-			$this->assertSame('(no PEM header found)', $errors[0]['context']['public_key_pem_header']);
+			$this->assertSame('(no PEM header found)', $errors[0]['context']['public_key_pem']);
+		}
+	}
+
+	public function testVerifyLogsAFooterMissingHintForATruncatedPublicKey(): void {
+		[ , $publicKeyPem ] = $this->generateKeyPair();
+		$truncated = substr($publicKeyPem, 0, (int) (strlen($publicKeyPem) / 2));
+		$logger    = new ArrayLogger;
+
+		try {
+			(new RsaSha1Verifier($truncated, $logger))->verify('base string', new Credentials('key'), 'signature');
+			$this->fail('Expected a SigningException');
+		} catch ( SigningException ) {
+			$errors = $logger->recordsAt('error');
+			$this->assertStringContainsString('footer missing - likely truncated', $errors[0]['context']['public_key_pem']);
 		}
 	}
 

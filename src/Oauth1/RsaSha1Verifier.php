@@ -35,9 +35,10 @@ final class RsaSha1Verifier implements VerifierInterface {
 			// SigningException was thrown" with "the signing side specifically failed."
 			$this->logger->error('oauth1.verifying_failed', [
 				'consumer_key' => $credentials->consumerKey,
-				// See PemPreview's own docblock for why this is safe: a PEM header is fixed
-				// boilerplate, never derived from the key's own bytes.
-				'public_key_pem_header' => PemPreview::headerLine($this->publicKey),
+				// See PemPreview's own docblock for why this is safe (built only from the PEM
+				// format's own fixed boilerplate) and why it also checks for the footer, not
+				// just the header - a truncated key keeps its header fully intact.
+				'public_key_pem' => PemPreview::describe($this->publicKey),
 				'security_relevant' => false,
 			]);
 

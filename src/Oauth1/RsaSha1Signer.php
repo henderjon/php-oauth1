@@ -56,9 +56,10 @@ final class RsaSha1Signer implements SignerInterface {
 	private function fail( string $message, Credentials $credentials ): never {
 		$this->logger->error('oauth1.signing_failed', [
 			'consumer_key' => $credentials->consumerKey,
-			// See PemPreview's own docblock for why this is safe: a PEM header is fixed
-			// boilerplate, never derived from the key's own bytes.
-			'private_key_pem_header' => PemPreview::headerLine($this->privateKey),
+			// See PemPreview's own docblock for why this is safe (built only from the PEM
+			// format's own fixed boilerplate) and why it also checks for the footer, not
+			// just the header - a truncated key keeps its header fully intact.
+			'private_key_pem' => PemPreview::describe($this->privateKey),
 			'security_relevant' => false,
 		]);
 
