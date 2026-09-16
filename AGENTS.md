@@ -153,5 +153,12 @@ its own class.
 ## Git
 
 - Default branch is `dev`. Treat it as the merge target for pull requests, not a branch to commit to directly.
+- Every branch is cut from `dev`, and every PR targets `dev` - never another feature branch, matching `php-oidc`'s
+  own convention. This holds even when new work genuinely depends on something only a not-yet-merged branch has
+  (a test fake, a helper class): branch from `dev` anyway and duplicate the small dependency if needed, or wait
+  for the dependency to land in `dev` first, rather than stacking. A branch merged into another branch instead of
+  `dev` is invisible to `dev` unless that branch is later re-merged too - exactly the bug a stacked branch caused
+  once already (PR #11 targeted `feature/logging` instead of `dev`, merged into it after `feature/logging` had
+  already been merged into `dev`, and was stranded until a follow-up PR re-merged it).
 - Keep commits focused. A commit that adds a feature and a commit that hardens/tests it are both fine as separate
   commits; do not squash a branch down to one commit by default.
