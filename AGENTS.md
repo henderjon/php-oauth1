@@ -83,14 +83,14 @@ its own class.
   consumer-key checks must throw a package exception when the expected value is missing, invalid, or ambiguous,
   never silently skip the check. A missing value because "it should always be there" is exactly the case that must
   still be verified.
-- **Log levels.** `debug` traces the happy path. `warning` is a fail-open decision or an ambiguous runtime event,
-  never a configuration choice. `alert` is reserved for a configuration choice worth a developer's own review
-  (`PLAINTEXT` signing allowed outside TLS, unsigned requests accepted, nonce-replay checking disabled) - never a
-  runtime event. `error` is every validation, fetch, or parse failure, always paired with the exception about to be
-  thrown. Every `error()` call also carries a `security_relevant` boolean in its context, `true` only on the small
-  curated set of call sites that are essentially unexplainable except as tampering or forgery, `false` everywhere
-  else - `false` means "not in that curated set," never "confirmed benign." See `docs/index.html`'s Logging section
-  for the full level table, the curated `true` list, and the reasoning behind it, once it exists here.
+- **Log levels.** `debug` traces the happy path (`RequestSigner`/`RequestVerifier` log one line each on success).
+  `warning` is a rejection worth seeing in aggregate without treating as an application error - currently just a
+  signature mismatch in `RequestVerifier`. Neither library logs at `alert` or `error`, or carries a
+  `security_relevant` context flag, the way `php-oidc` does - that scheme exists there because a config choice
+  (TLS disabled, an untrusted audience allowed) is a real, ongoing decision surface in an OIDC client. Nothing here
+  has an equivalent: HMAC-SHA1 is the only method Basic LTI allows, PLAINTEXT's TLS requirement is the caller's
+  responsibility to enforce (see `PlaintextSigner`'s docblock), and every verification failure already throws.
+  Revisit this note - and add a Logging section to `docs/index.html` - if that changes.
 - **Typing.** Type every parameter and return, using native PHP types first and PHPDoc (`@param`, `@return`,
   array-shape syntax) only where types fall short or where an argument's shape needs documenting. Prefer `iterable`
   over `array` for arguments when either works.
