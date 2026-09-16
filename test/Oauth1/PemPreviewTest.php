@@ -44,6 +44,16 @@ class PemPreviewTest extends TestCase {
 		);
 	}
 
+	/**
+	 * PCRE's $ in multiline mode matches immediately before \n, not before \r\n - a valid,
+	 * complete key exported with Windows line endings must not be misreported as truncated.
+	 */
+	public function testDoesNotFlagTruncationForAValidKeyWithCrlfLineEndings(): void {
+		$complete = "-----BEGIN RSA PRIVATE KEY-----\r\nMIIB...redacted...\r\n-----END RSA PRIVATE KEY-----\r\n";
+
+		$this->assertStringNotContainsString('truncated', PemPreview::describe($complete));
+	}
+
 	public function testDoesNotFlagTruncationWhenTheFooterIsPresent(): void {
 		$complete = "-----BEGIN RSA PRIVATE KEY-----\nMIIB...redacted...\n-----END RSA PRIVATE KEY-----\n";
 

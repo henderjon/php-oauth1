@@ -20,4 +20,11 @@ class InvalidLaunchExceptionTest extends TestCase {
 		$this->assertSame('the-consumer-key', $exception->getConsumerKey());
 	}
 
+	public function testPreviousIsInheritedFromTheBaseException(): void {
+		$previous  = new \RuntimeException('underlying failure');
+		$exception = new InvalidLaunchException('missing resource_link_id', LaunchValidationFailureReason::MissingResourceLinkId, 'the-consumer-key', $previous);
+
+		$this->assertSame($previous, $exception->getPrevious());
+	}
+
 }

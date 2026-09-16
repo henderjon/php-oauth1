@@ -43,7 +43,14 @@ final class SignatureBaseString {
 	private static function baseStringUri( string $url ): string {
 		$parts = parse_url($url);
 		if ( $parts === false || ! isset($parts['scheme'], $parts['host']) ) {
-			throw new SigningException("URL \"$url\" has no scheme or host to build a base string URI from");
+			// Deliberately does not interpolate $url into the message - it is caller/attacker
+			// data of unbounded length (RequestVerifier's caller passes it straight from an
+			// incoming, not-yet-validated request), and this exception's message ends up in a
+			// log line via RequestSigner/RequestVerifier's own catch blocks, unlike
+			// oauth_consumer_key, which those same log lines explicitly cap before logging. The
+			// caller catching this already has the offending $url in scope - it is the same
+			// argument they passed into sign()/verify() - so nothing is lost by leaving it out.
+			throw new SigningException('URL has no scheme or host to build a base string URI from');
 		}
 
 		$scheme = strtolower($parts['scheme']);

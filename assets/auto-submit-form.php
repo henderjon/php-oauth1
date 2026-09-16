@@ -51,7 +51,10 @@ echo escape($message);
 		  target="<?= escape($target) ?>"
 	  <?php } ?>>
 	<?php foreach ($launch->parameters as $name => $value) { ?>
-	<input type="hidden" name="<?= escape($name) ?>" value="<?= escape($value) ?>" />
+	<?php // (string) cast: a purely-numeric parameter name (e.g. a custom parameter literally
+	// named "123") is stored as an int array key by PHP itself, and escape() rejects a
+	// non-string argument under this file's own strict_types declaration. ?>
+	<input type="hidden" name="<?= escape((string) $name) ?>" value="<?= escape($value) ?>" />
 	<?php } ?>
 	<input type="submit" value="Continue" />
 </form>
@@ -67,7 +70,9 @@ echo escape($message);
 	}, <?= (1000 * $submitDelay) + 50 ?>);
 }());
 </script>
+<!-- Drop this noscript block immediately after the </form> tag above, and the browser submits as
+     soon as it parses that line - it must not sit inside <noscript>, where it would render as
+     visible page text rather than run as a comment. -->
 <noscript>
 <script>document.forms[0].submit();</script>
-// Drop it immediately after the </form> tag and the browser submits as soon as it parses that line.
 </noscript>

@@ -52,7 +52,26 @@ final class RsaSha1Verifier implements VerifierInterface {
 			return false;
 		}
 
-		return openssl_verify($baseString, $decodedSignature, $key, OPENSSL_ALGO_SHA1) === 1;
+		$result = openssl_verify($baseString, $decodedSignature, $key, OPENSSL_ALGO_SHA1);
+		if ( $result === -1 ) {
+			// openssl_verify() returns -1, not just 0, when it rejects the input itself (e.g. a
+			// key of the wrong type/algorithm for OPENSSL_ALGO_SHA1) rather than computing a
+			// signature and finding it did not match. Collapsing -1 into the same `false` as an
+			// ordinary mismatch would report a key/config problem as a failed signature check -
+			// logged with security_relevant: true by RequestVerifier, a false attack signal for
+			// what is actually a misconfiguration. SigningException's own docblock says this
+			// exact case ("openssl itself rejecting the input") belongs here, not as a returned
+			// `false`.
+			$this->logger->error('oauth1.verifying_failed', [
+				'consumer_key' => $credentials->consumerKey,
+				'openssl_error' => openssl_error_string() ?: null,
+				'security_relevant' => false,
+			]);
+
+			throw new SigningException('RSA-SHA1 verification failed: openssl rejected the input', $credentials->consumerKey);
+		}
+
+		return $result === 1;
 	}
 
 }

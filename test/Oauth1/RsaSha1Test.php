@@ -132,6 +132,35 @@ class RsaSha1Test extends TestCase {
 		}
 	}
 
+	/**
+	 * openssl_verify() returns -1, not just 0, when it rejects the input itself rather than
+	 * computing a signature and finding it did not match - here, RSA signature bytes checked
+	 * against an unrelated EC public key. Collapsing that into the same `false` as an ordinary
+	 * mismatch would report a key/config problem as a failed signature check instead of the
+	 * SigningException SigningException's own docblock says this case belongs to.
+	 */
+	public function testVerifyThrowsRatherThanReturningFalseWhenOpensslRejectsTheKeyOutright(): void {
+		[ $privateKeyPem ] = $this->generateKeyPair();
+		$signature = (new RsaSha1Signer($privateKeyPem))->sign('base string', new Credentials('key'));
+
+		$ecKey = openssl_pkey_new([ 'curve_name' => 'prime256v1', 'private_key_type' => OPENSSL_KEYTYPE_EC ]);
+		$this->assertNotFalse($ecKey);
+		$ecPublicKeyPem = openssl_pkey_get_details($ecKey)['key'];
+
+		$logger = new ArrayLogger;
+
+		try {
+			(new RsaSha1Verifier($ecPublicKeyPem, $logger))->verify('base string', new Credentials('key'), $signature);
+			$this->fail('Expected a SigningException');
+		} catch ( SigningException $exception ) {
+			$this->assertSame('key', $exception->getConsumerKey());
+			$errors = $logger->recordsAt('error');
+			$this->assertCount(1, $errors);
+			$this->assertSame('oauth1.verifying_failed', $errors[0]['message']);
+			$this->assertFalse($errors[0]['context']['security_relevant']);
+		}
+	}
+
 	public function testVerifyLogsAFooterMissingHintForATruncatedPublicKey(): void {
 		[ , $publicKeyPem ] = $this->generateKeyPair();
 		$truncated = substr($publicKeyPem, 0, (int) (strlen($publicKeyPem) / 2));

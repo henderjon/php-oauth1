@@ -14,6 +14,14 @@ use Psr\Log\NullLogger;
  * RSA-SHA1 - rejects a timestamp outside the configured tolerance or a nonce already claimed by
  * NonceStore (RFC 5849 §3.2, §3.3).
  *
+ * The nonce is claimed only *after* the signature has been proven genuine, deliberately not the
+ * other way around. `oauth_nonce`, `oauth_timestamp`, and `oauth_consumer_key` are all plaintext
+ * request parameters, visible to anyone who can see the wire - claiming first would let an
+ * attacker who cannot sign anything still burn a legitimate nonce by sending a request with a
+ * garbage `oauth_signature` but a copied nonce/timestamp/consumer key, turning RFC 5849 §3.3's
+ * own replay protection into a denial-of-service vector against the legitimate request that
+ * nonce belonged to.
+ *
  * Every failure throws RequestVerificationException rather than returning false - fail-closed,
  * so a caller cannot accidentally treat "did not check" the same as "checked and passed". Every
  * one of those failures also logs an `error()` immediately before throwing, carrying a
@@ -108,13 +116,15 @@ final class RequestVerifier {
 			);
 		}
 
-		if ( $this->verifier->method() === SignatureMethod::Plaintext ) {
+		$isPlaintext = $this->verifier->method() === SignatureMethod::Plaintext;
+
+		if ( $isPlaintext ) {
 			$this->logger->alert('oauth1.plaintext_method_used', [ 'consumer_key' => $this->loggableConsumerKey($oauthConsumerKey) ]);
 		} else {
-			$this->verifyTimestampAndNonce($parameters, $credentials);
+			$this->verifyTimestampTolerance($parameters, $credentials);
 		}
 
-		$baseString = $this->verifier->method() === SignatureMethod::Plaintext
+		$baseString = $isPlaintext
 			? ''
 			: $this->baseString($httpMethod, $url, $parameters, $oauthConsumerKey);
 
@@ -122,15 +132,25 @@ final class RequestVerifier {
 			$this->fail('Signature does not match', VerificationFailureReason::InvalidSignature, true, $oauthConsumerKey);
 		}
 
+		// Only claim the nonce once the signature above is known genuine - see this class's own
+		// docblock for why claiming any earlier would be a denial-of-service vector.
+		if ( ! $isPlaintext ) {
+			$this->claimNonce($parameters, $credentials);
+		}
+
 		$this->logger->debug('oauth1.request_verified', [ 'consumer_key' => $this->loggableConsumerKey($oauthConsumerKey) ]);
 	}
 
 	/**
+	 * Checks presence and tolerance only - claiming the nonce is deliberately deferred to
+	 * claimNonce(), called only after the signature is verified. See this class's own docblock.
+	 *
 	 * @param array<string,string|list<string>> $parameters
 	 */
-	private function verifyTimestampAndNonce( array $parameters, Credentials $credentials ): void {
+	private function verifyTimestampTolerance( array $parameters, Credentials $credentials ): void {
 		$timestamp = $this->requireScalarParameter($parameters, 'oauth_timestamp', $credentials->consumerKey);
-		$nonce     = $this->requireScalarParameter($parameters, 'oauth_nonce', $credentials->consumerKey);
+		// oauth_nonce's presence is required up front too, even though claiming it is deferred.
+		$this->requireScalarParameter($parameters, 'oauth_nonce', $credentials->consumerKey);
 
 		$age = abs($this->clock->now()->getTimestamp() - (int) $timestamp);
 		if ( $age > $this->timestampToleranceSeconds ) {
@@ -141,6 +161,14 @@ final class RequestVerifier {
 				$credentials->consumerKey,
 			);
 		}
+	}
+
+	/**
+	 * @param array<string,string|list<string>> $parameters
+	 */
+	private function claimNonce( array $parameters, Credentials $credentials ): void {
+		$timestamp = $this->requireScalarParameter($parameters, 'oauth_timestamp', $credentials->consumerKey);
+		$nonce     = $this->requireScalarParameter($parameters, 'oauth_nonce', $credentials->consumerKey);
 
 		if ( ! $this->nonceStore->claim($credentials->consumerKey, $credentials->token, $nonce, $timestamp, $this->timestampToleranceSeconds) ) {
 			$this->fail('Nonce has already been used', VerificationFailureReason::NonceReplayed, true, $credentials->consumerKey);

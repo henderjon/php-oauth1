@@ -35,7 +35,10 @@ final class PemPreview {
 			return '(no PEM header found)';
 		}
 
-		$hasFooter = preg_match('/^-----END ' . preg_quote($match[1], '/') . '-----$/m', $pem) === 1;
+		// \r? before the multiline $ anchor: PCRE's $ in /m mode matches immediately before \n,
+		// not before \r\n, so a key with Windows line endings would otherwise be misreported as
+		// truncated - confirmed directly against a real key exported with CRLF endings.
+		$hasFooter = preg_match('/^-----END ' . preg_quote($match[1], '/') . '-----\r?$/m', $pem) === 1;
 
 		return $hasFooter ? $firstLine : "$firstLine (footer missing - likely truncated)";
 	}
