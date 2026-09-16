@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#4F5B93">
+  <link rel="canonical" href="https://henderjon.github.io/php-oauth1/">
   <title>php-oauth1 - Package Documentation</title>
   <style>
     /* Base */
@@ -996,7 +997,7 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
       <div class="alert-box">
         <strong>Data only, not markup.</strong> Basic LTI's own examples submit a launch as an
         auto-submitting HTML form, but rendering one here would bake this library's opinion of a
-        <code>&lt;script&gt;</code> tag into every consumer, including one - like myON - whose
+        <code>&lt;script&gt;</code> tag into every consumer, including one whose
         Content-Security-Policy requires a <code>nonce</code> on every script tag that this library
         has no way to know. Turning <code>$parameters</code> into hidden form fields is the
         consuming application's job - see <a href="https://github.com/henderjon/php-oauth1/tree/dev/example">example/</a>
