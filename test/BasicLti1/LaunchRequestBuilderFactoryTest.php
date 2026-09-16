@@ -27,8 +27,15 @@ class LaunchRequestBuilderFactoryTest extends TestCase {
 			[ 'resource_link_id' => 'link-1' ],
 		);
 
+		// Checks relative order of these two specific messages, not the exact full list - how
+		// many intermediate debug checkpoints either layer logs is an implementation detail
+		// this test does not care about; that one logger reaches both layers, in the right
+		// order, is what it is asserting.
 		$messages = array_column($logger->recordsAt('debug'), 'message');
-		$this->assertSame([ 'oauth1.request_signed', 'basiclti1.launch_built' ], $messages);
+		$this->assertSame(
+			[ 'oauth1.request_signed', 'basiclti1.launch_built' ],
+			array_values(array_intersect($messages, [ 'oauth1.request_signed', 'basiclti1.launch_built' ])),
+		);
 	}
 
 }

@@ -113,7 +113,50 @@ class LaunchVerifierTest extends TestCase {
 		} catch ( InvalidLaunchException $exception ) {
 			$this->assertSame(LaunchValidationFailureReason::MissingResourceLinkId, $exception->getReason());
 			$this->assertLoggedError($logger, LaunchValidationFailureReason::MissingResourceLinkId);
+			$this->assertSame('key', $exception->getConsumerKey());
 		}
+	}
+
+	public function testVerifyRejectsARepeatedResourceLinkIdParameterAsMissing(): void {
+		// A repeated resource_link_id (a list, not a scalar) is malformed input, not a valid
+		// identifier - found while making sure this class never casts an array to string
+		// before logging it.
+		$credentials = new Credentials('key', 'secret');
+		$clock       = new FixedClock(new \DateTimeImmutable('@1251600739'));
+		$signer      = new \Oauth1\RequestSigner(new HmacSha1Signer, clock: $clock);
+
+		$parameters = [
+			'lti_message_type' => Launch::MESSAGE_TYPE,
+			'lti_version' => Launch::VERSION,
+			'resource_link_id' => [ 'a', 'b' ],
+		];
+		$signed     = $signer->sign('POST', 'http://example.com/launch', $credentials, $parameters);
+		$parameters = [ ...$parameters, ...$signed->oauthParameters ];
+
+		try {
+			$this->verifier($clock)->verify('http://example.com/launch', $credentials, $parameters);
+			$this->fail('Expected an InvalidLaunchException');
+		} catch ( InvalidLaunchException $exception ) {
+			$this->assertSame(LaunchValidationFailureReason::MissingResourceLinkId, $exception->getReason());
+		}
+	}
+
+	public function testVerifyTruncatesAnOverlongResourceLinkIdBeforeLoggingIt(): void {
+		$credentials = new Credentials('key', 'secret');
+		$clock       = new FixedClock(new \DateTimeImmutable('@1251600739'));
+		$logger      = new ArrayLogger;
+		$signer      = new \Oauth1\RequestSigner(new HmacSha1Signer, clock: $clock);
+		$overlong    = str_repeat('a', 500);
+
+		$parameters = [ 'lti_message_type' => Launch::MESSAGE_TYPE, 'lti_version' => Launch::VERSION, 'resource_link_id' => $overlong ];
+		$signed     = $signer->sign('POST', 'http://example.com/launch', $credentials, $parameters);
+		$parameters = [ ...$parameters, ...$signed->oauthParameters ];
+
+		$this->verifier($clock, $logger)->verify('http://example.com/launch', $credentials, $parameters);
+
+		$debug = $logger->recordsAt('debug');
+		$this->assertLessThan(strlen($overlong), strlen($debug[0]['context']['resource_link_id']));
+		$this->assertStringEndsWith('...(truncated)', $debug[0]['context']['resource_link_id']);
 	}
 
 	public function testVerifyThrowsForAnInvalidMessageTypeOnceSignatureChecksOut(): void {

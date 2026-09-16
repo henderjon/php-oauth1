@@ -57,9 +57,11 @@ class RequestVerifierTest extends TestCase {
 		$this->verifier($clock, logger: $logger)->verify('POST', self::URL, $this->credentials(), $this->sign($clock));
 
 		$debug = $logger->recordsAt('debug');
-		$this->assertCount(1, $debug);
-		$this->assertSame('oauth1.request_verified', $debug[0]['message']);
-		$this->assertSame('key', $debug[0]['context']['consumer_key']);
+		$this->assertCount(2, $debug);
+		$this->assertSame('oauth1.signature_base_string_built', $debug[0]['message']);
+		$this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $debug[0]['context']['base_string_sha256']);
+		$this->assertSame('oauth1.request_verified', $debug[1]['message']);
+		$this->assertSame('key', $debug[1]['context']['consumer_key']);
 		$this->assertSame([], $logger->recordsAboveDebug());
 	}
 
@@ -74,6 +76,7 @@ class RequestVerifierTest extends TestCase {
 
 		$this->assertSame(VerificationFailureReason::InvalidSignature, $exception->getReason());
 		$this->assertLoggedError($logger, VerificationFailureReason::InvalidSignature, true);
+		$this->assertSame('key', $exception->getConsumerKey());
 	}
 
 	public function testVerifyRejectsAReplayedNonce(): void {
@@ -132,6 +135,36 @@ class RequestVerifierTest extends TestCase {
 		$this->assertLoggedError($logger, VerificationFailureReason::ConsumerKeyMismatch, false);
 	}
 
+	public function testVerifyCapsAnOverlongIncomingConsumerKeyInTheLogButNotInTheException(): void {
+		// The incoming oauth_consumer_key is attacker-controlled and unvalidated until it has
+		// been checked against $credentials->consumerKey. Only the log line is capped, never
+		// the value a comparison runs against (a real mismatch is still correctly detected
+		// below) and never what the exception itself hands back to calling code - a caller
+		// may need the real value to look something up in its own store; see this class's own
+		// docblock for why that is a deliberate divergence from Oidc\AuthorizationStateStore's
+		// own choice to cap its exception's state too.
+		$clock      = new FixedClock(new \DateTimeImmutable('@137131201'));
+		$overlong   = str_repeat('a', 500);
+		$parameters = [
+			'oauth_consumer_key' => $overlong,
+			'oauth_signature_method' => 'HMAC-SHA1',
+			'oauth_signature' => 'irrelevant',
+			'oauth_timestamp' => '137131201',
+			'oauth_nonce' => 'nonce',
+		];
+
+		[ $exception, $logger ] = $this->assertRejected(
+			fn ( $logger ) => $this->verifier($clock, logger: $logger)->verify('POST', self::URL, $this->credentials(), $parameters),
+		);
+
+		$this->assertSame(VerificationFailureReason::ConsumerKeyMismatch, $exception->getReason());
+		$this->assertSame($overlong, $exception->getConsumerKey());
+
+		$errors = $logger->recordsAt('error');
+		$this->assertLessThan(strlen($overlong), strlen((string) $errors[0]['context']['consumer_key']));
+		$this->assertStringEndsWith('...(truncated)', $errors[0]['context']['consumer_key']);
+	}
+
 	public function testVerifyRejectsAnUnsupportedSignatureMethod(): void {
 		$clock      = new FixedClock(new \DateTimeImmutable('@137131201'));
 		$parameters = $this->sign($clock);
@@ -166,12 +199,36 @@ class RequestVerifierTest extends TestCase {
 		try {
 			$this->verifier($clock, logger: $logger)->verify('POST', '/relative/path/no/host', $this->credentials(), $parameters);
 			$this->fail('Expected a SigningException');
-		} catch ( SigningException ) {
+		} catch ( SigningException $exception ) {
 			$errors = $logger->recordsAt('error');
 			$this->assertCount(1, $errors);
 			$this->assertSame('oauth1.signing_failed', $errors[0]['message']);
 			$this->assertFalse($errors[0]['context']['security_relevant']);
+
+			// See RequestSignerTest's matching test for why this is rewrapped, not rethrown
+			// as-is, and why the logged exception and the thrown one must be identical.
+			$this->assertSame('key', $exception->getConsumerKey());
+			$this->assertInstanceOf(SigningException::class, $exception->getPrevious());
+			$this->assertNull($exception->getPrevious()->getConsumerKey());
+			$this->assertSame($exception, $errors[0]['context']['exception']);
 		}
+	}
+
+	public function testVerifyNeverLogsAValueFromRequestParameters(): void {
+		// See RequestSignerTest's matching test - the same PII-in-launch-parameters concern
+		// applies to the receiving side.
+		$clock      = new FixedClock(new \DateTimeImmutable('@137131201'));
+		$logger     = new ArrayLogger;
+		$parameters = $this->sign($clock, [
+			'lis_person_name_full' => 'Ada Lovelace',
+			'lis_person_contact_email_primary' => 'ada@example.test',
+		]);
+
+		$this->verifier($clock, logger: $logger)->verify('POST', self::URL, $this->credentials(), $parameters);
+
+		$serializedLog = json_encode($logger->records);
+		$this->assertStringNotContainsString('Ada Lovelace', $serializedLog);
+		$this->assertStringNotContainsString('ada@example.test', $serializedLog);
 	}
 
 	public function testVerifyAcceptsAPlaintextRequestWithNoTimestampOrNonce(): void {

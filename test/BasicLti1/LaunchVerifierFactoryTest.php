@@ -34,8 +34,13 @@ class LaunchVerifierFactoryTest extends TestCase {
 		(new LaunchVerifierFactory(logger: $logger))->make(new InMemoryCache)
 			->verify('http://example.com/launch', $credentials, $launch->parameters);
 
+		// See LaunchRequestBuilderFactoryTest's matching test for why this checks relative
+		// order of these two messages rather than the exact full list.
 		$messages = array_column($logger->recordsAt('debug'), 'message');
-		$this->assertSame([ 'oauth1.request_verified', 'basiclti1.launch_verified' ], $messages);
+		$this->assertSame(
+			[ 'oauth1.request_verified', 'basiclti1.launch_verified' ],
+			array_values(array_intersect($messages, [ 'oauth1.request_verified', 'basiclti1.launch_verified' ])),
+		);
 	}
 
 }

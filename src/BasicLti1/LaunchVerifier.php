@@ -6,6 +6,7 @@ use BasicLti1\Exceptions\InvalidLaunchException;
 use Oauth1\Credentials;
 use Oauth1\Exceptions\RequestVerificationException;
 use Oauth1\RequestVerifier;
+use Oauth1\Truncate;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -34,6 +35,8 @@ use Psr\Log\NullLogger;
  */
 final class LaunchVerifier {
 
+	private const MAX_LOGGED_RESOURCE_LINK_ID_LENGTH = 64;
+
 	public function __construct(
 		private readonly RequestVerifier $requestVerifier,
 		private readonly LoggerInterface $logger = new NullLogger,
@@ -58,13 +61,17 @@ final class LaunchVerifier {
 			$this->fail('Missing or invalid lti_version', LaunchValidationFailureReason::MissingOrInvalidVersion, $credentials);
 		}
 
-		if ( ( $parameters[Launch::RESOURCE_LINK_ID_PARAM] ?? '' ) === '' ) {
+		$resourceLinkId = $parameters[Launch::RESOURCE_LINK_ID_PARAM] ?? '';
+		if ( ! is_string($resourceLinkId) || $resourceLinkId === '' ) {
 			$this->fail('A Basic LTI launch requires a non-empty resource_link_id', LaunchValidationFailureReason::MissingResourceLinkId, $credentials);
 		}
 
+		// resource_link_id is the Tool Consumer's own value, not this class's to bound - see
+		// Oauth1\RequestVerifier's own docblock for the same reasoning applied to
+		// oauth_consumer_key.
 		$this->logger->debug('basiclti1.launch_verified', [
 			'consumer_key' => $credentials->consumerKey,
-			'resource_link_id' => $parameters[Launch::RESOURCE_LINK_ID_PARAM],
+			'resource_link_id' => Truncate::to($resourceLinkId, self::MAX_LOGGED_RESOURCE_LINK_ID_LENGTH),
 		]);
 	}
 
@@ -75,7 +82,7 @@ final class LaunchVerifier {
 			'security_relevant' => false,
 		]);
 
-		throw new InvalidLaunchException($message, $reason);
+		throw new InvalidLaunchException($message, $reason, $credentials->consumerKey);
 	}
 
 }

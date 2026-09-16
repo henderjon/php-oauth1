@@ -79,12 +79,14 @@ class RsaSha1Test extends TestCase {
 		try {
 			(new RsaSha1Signer('not a real key', logger: $logger))->sign('base string', new Credentials('key'));
 			$this->fail('Expected a SigningException');
-		} catch ( SigningException ) {
+		} catch ( SigningException $exception ) {
 			$errors = $logger->recordsAt('error');
 			$this->assertCount(1, $errors);
 			$this->assertSame('oauth1.signing_failed', $errors[0]['message']);
 			$this->assertSame('key', $errors[0]['context']['consumer_key']);
 			$this->assertFalse($errors[0]['context']['security_relevant']);
+			$this->assertSame('key', $exception->getConsumerKey());
+			$this->assertSame('(no PEM header found)', $errors[0]['context']['private_key_pem_header']);
 		}
 	}
 
@@ -106,11 +108,47 @@ class RsaSha1Test extends TestCase {
 		try {
 			(new RsaSha1Verifier('not a real key', $logger))->verify('base string', new Credentials('key'), 'signature');
 			$this->fail('Expected a SigningException');
-		} catch ( SigningException ) {
+		} catch ( SigningException $exception ) {
 			$errors = $logger->recordsAt('error');
 			$this->assertCount(1, $errors);
 			$this->assertSame('oauth1.signing_failed', $errors[0]['message']);
 			$this->assertFalse($errors[0]['context']['security_relevant']);
+			$this->assertSame('key', $exception->getConsumerKey());
+			$this->assertSame('(no PEM header found)', $errors[0]['context']['public_key_pem_header']);
+		}
+	}
+
+	/**
+	 * $privateKey/$publicKey are the key's own PEM content, not a path to one - a bare filename
+	 * (no scheme) is not treated as a path at all, and fails exactly like any other unreadable
+	 * key, empirically confirmed against PHP's own openssl_pkey_get_private()/
+	 * openssl_pkey_get_public() rather than assumed.
+	 */
+	public function testABareFilenameIsNotAcceptedAsAPathToTheKey(): void {
+		$tempFile = tempnam(sys_get_temp_dir(), 'rsa_test_key_');
+		[ $privateKeyPem, $publicKeyPem ] = $this->generateKeyPair();
+		file_put_contents($tempFile, $privateKeyPem);
+
+		try {
+			$this->expectException(SigningException::class);
+
+			(new RsaSha1Signer($tempFile))->sign('base string', new Credentials('key'));
+		} finally {
+			unlink($tempFile);
+		}
+	}
+
+	public function testAFileSchemePrefixedPathIsAcceptedAsAnIncidentalConsequenceOfOpensslsOwnStreamWrapperSupport(): void {
+		$tempFile = tempnam(sys_get_temp_dir(), 'rsa_test_key_');
+		[ $privateKeyPem, $publicKeyPem ] = $this->generateKeyPair();
+		file_put_contents($tempFile, $privateKeyPem);
+
+		try {
+			$signature = (new RsaSha1Signer("file://$tempFile"))->sign('base string', new Credentials('key'));
+
+			$this->assertTrue((new RsaSha1Verifier($publicKeyPem))->verify('base string', new Credentials('key'), $signature));
+		} finally {
+			unlink($tempFile);
 		}
 	}
 

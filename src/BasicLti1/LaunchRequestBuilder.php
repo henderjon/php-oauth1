@@ -52,7 +52,24 @@ final class LaunchRequestBuilder {
 			throw new InvalidLaunchException(
 				'A Basic LTI launch requires a non-empty resource_link_id',
 				LaunchValidationFailureReason::MissingResourceLinkId,
+				$credentials->consumerKey,
 			);
+		}
+
+		// Overriding lti_message_type/lti_version below always lets this method win a
+		// collision silently - this is the only place that says a caller-supplied value
+		// actually got replaced, mirroring Oidc's own "extraAuthParams collided with a
+		// reserved param" debug.
+		$overriddenKeys = array_values(array_filter(
+			[ Launch::MESSAGE_TYPE_PARAM, Launch::VERSION_PARAM ],
+			fn ( string $key ) => isset($launchParameters[$key]) && $launchParameters[$key] !== ( $key === Launch::MESSAGE_TYPE_PARAM ? Launch::MESSAGE_TYPE : Launch::VERSION ),
+		));
+
+		if ( $overriddenKeys !== [] ) {
+			$this->logger->debug('basiclti1.reserved_parameter_overridden', [
+				'consumer_key' => $credentials->consumerKey,
+				'overridden_keys' => $overriddenKeys,
+			]);
 		}
 
 		$launchParameters[Launch::MESSAGE_TYPE_PARAM] = Launch::MESSAGE_TYPE;

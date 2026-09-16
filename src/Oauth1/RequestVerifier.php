@@ -33,8 +33,26 @@ use Psr\Log\NullLogger;
  *
  * Every PLAINTEXT verify() call also logs an `alert` - see RequestSigner's docblock for why, and
  * why every call, not just once.
+ *
+ * `oauth_consumer_key` is taken straight from the incoming, not-yet-validated request and is
+ * unbounded in length until it has been checked against `$credentials->consumerKey`. Only the
+ * copy that goes into a *log line* is length-capped (`loggableConsumerKey()`, the same way
+ * Oidc\AuthorizationStateStore's own `loggableState()` caps `state` before it has been
+ * validated) - both the value a security comparison runs against and the value
+ * RequestVerificationException/SigningException actually carry stay full and untruncated.
+ * Diverges from AuthorizationStateStore's own choice to cap what its exception carries too:
+ * `state` there is a library-generated, opaque correlation token with no life beyond this
+ * library's own state store, where a truncated copy loses nothing a caller could act on. A
+ * consumer key is the caller's own business identifier - the caller looked up `$credentials`
+ * by it before ever calling `verify()`, and might reasonably want to look something up by it
+ * again after catching a failure (rate-limit a specific consumer, notify whoever owns it) -
+ * handing back a silently-truncated key that no longer matches anything in the caller's own
+ * store would be a functional bug hiding behind a security-sounding justification, not a
+ * property of this decision worth having.
  */
 final class RequestVerifier {
+
+	private const MAX_LOGGED_CONSUMER_KEY_LENGTH = 64;
 
 	public function __construct(
 		private readonly VerifierInterface $verifier,
@@ -86,7 +104,7 @@ final class RequestVerifier {
 		}
 
 		if ( $this->verifier->method() === SignatureMethod::Plaintext ) {
-			$this->logger->alert('oauth1.plaintext_method_used', [ 'consumer_key' => $oauthConsumerKey ]);
+			$this->logger->alert('oauth1.plaintext_method_used', [ 'consumer_key' => $this->loggableConsumerKey($oauthConsumerKey) ]);
 		} else {
 			$this->verifyTimestampAndNonce($parameters, $credentials);
 		}
@@ -99,7 +117,7 @@ final class RequestVerifier {
 			$this->fail('Signature does not match', VerificationFailureReason::InvalidSignature, true, $oauthConsumerKey);
 		}
 
-		$this->logger->debug('oauth1.request_verified', [ 'consumer_key' => $oauthConsumerKey ]);
+		$this->logger->debug('oauth1.request_verified', [ 'consumer_key' => $this->loggableConsumerKey($oauthConsumerKey) ]);
 	}
 
 	/**
@@ -129,16 +147,43 @@ final class RequestVerifier {
 	 */
 	private function baseString( string $httpMethod, string $url, array $parameters, string $consumerKey ): string {
 		try {
-			return SignatureBaseString::build($httpMethod, $url, $this->withoutSignature($parameters));
+			$baseString = SignatureBaseString::build($httpMethod, $url, $this->withoutSignature($parameters));
 		} catch ( SigningException $exception ) {
+			// Rewrapped, not rethrown as-is: SignatureBaseString has no Credentials in scope to
+			// attach a consumer key to its own exception, but this layer does - the same
+			// boundary-attach pattern as Oidc\OpenIDConnectClient wrapping a lower-level
+			// AuthenticationFailedException to add the ID token it has and the collaborator
+			// that threw did not. Constructed before logging, not after - see
+			// RequestSigner::baseString()'s matching comment for why. Carries the full,
+			// untruncated $consumerKey - a caller catching this may need the real value to
+			// look something up in its own store; only the *log line* is length-capped, per
+			// this class's own docblock, never what a caller actually receives.
+			$rewrapped = new SigningException($exception->getMessage(), $consumerKey, $exception);
+
 			$this->logger->error('oauth1.signing_failed', [
-				'consumer_key' => $consumerKey,
-				'exception' => $exception,
+				'consumer_key' => $this->loggableConsumerKey($consumerKey),
+				'exception' => $rewrapped,
 				'security_relevant' => false,
 			]);
 
-			throw $exception;
+			throw $rewrapped;
 		}
+
+		// The base string can carry values a caller supplied - Basic LTI's own launch
+		// parameters include PII (lis_person_name_full, lis_person_contact_email_primary) -
+		// and this class has no way to know which, if any, of an arbitrary caller's
+		// $requestParameters are sensitive the way Oidc\TokenEndpointClient's own
+		// SENSITIVE_PARAM_KEYS can, since that list is only possible because OIDC defines a
+        // fixed parameter vocabulary this library owns. A hash preserves the one thing this
+		// log line exists for - telling whether two parties built the identical base string,
+		// by comparing this value across their two logs - without ever putting the content
+		// itself, PII included, into a log store.
+		$this->logger->debug('oauth1.signature_base_string_built', [
+			'consumer_key' => $this->loggableConsumerKey($consumerKey),
+			'base_string_sha256' => hash('sha256', $baseString),
+		]);
+
+		return $baseString;
 	}
 
 	/**
@@ -166,11 +211,26 @@ final class RequestVerifier {
 	private function fail( string $message, VerificationFailureReason $reason, bool $securityRelevant, ?string $consumerKey ): never {
 		$this->logger->error('oauth1.verification_failed', [
 			'reason' => $reason->name,
-			'consumer_key' => $consumerKey,
+			'consumer_key' => $this->loggableConsumerKey($consumerKey),
 			'security_relevant' => $securityRelevant,
 		]);
 
-		throw new RequestVerificationException($message, $reason);
+		// Full, untruncated $consumerKey - not $this->loggableConsumerKey($consumerKey) above.
+		// A caller catching this may need the real value (to look something up in its own
+		// store, say); only the log line just above is length-capped. See this class's own
+		// docblock for why only the logged/thrown-*to-the-log* copy is ever capped, never what
+		// calling code actually receives.
+		throw new RequestVerificationException($message, $reason, $consumerKey);
+	}
+
+	/**
+	 * Caps the incoming, not-yet-validated `oauth_consumer_key` at
+	 * MAX_LOGGED_CONSUMER_KEY_LENGTH before it goes anywhere - a log line or an exception - that
+	 * this class does not control the eventual size of. See this class's own docblock for why
+	 * only this copy is capped, never the value a comparison runs against.
+	 */
+	private function loggableConsumerKey( ?string $consumerKey ): ?string {
+		return $consumerKey === null ? null : Truncate::to($consumerKey, self::MAX_LOGGED_CONSUMER_KEY_LENGTH);
 	}
 
 }

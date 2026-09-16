@@ -12,6 +12,11 @@ use Psr\Log\NullLogger;
  */
 final class RsaSha1Verifier implements VerifierInterface {
 
+	/**
+	 * @param string $publicKey The key's own PEM content, not a path to it - see
+	 *                           RsaSha1Signer's matching constructor docblock for the exact
+	 *                           same reasoning, applied to `openssl_pkey_get_public()` here.
+	 */
 	public function __construct(
 		private readonly string $publicKey,
 		private readonly LoggerInterface $logger = new NullLogger,
@@ -27,10 +32,13 @@ final class RsaSha1Verifier implements VerifierInterface {
 		if ( $key === false ) {
 			$this->logger->error('oauth1.signing_failed', [
 				'consumer_key' => $credentials->consumerKey,
+				// See PemPreview's own docblock for why this is safe: a PEM header is fixed
+				// boilerplate, never derived from the key's own bytes.
+				'public_key_pem_header' => PemPreview::headerLine($this->publicKey),
 				'security_relevant' => false,
 			]);
 
-			throw new SigningException('RSA-SHA1 verification failed: public key could not be read');
+			throw new SigningException('RSA-SHA1 verification failed: public key could not be read', $credentials->consumerKey);
 		}
 
 		$this->logger->debug('oauth1.rsa_sha1_key_loaded', [ 'consumer_key' => $credentials->consumerKey ]);

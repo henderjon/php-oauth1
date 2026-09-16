@@ -27,10 +27,12 @@ final class RequestVerifierFactory {
 	}
 
 	/**
-	 * @param ?string $rsaPublicKey Required, and used, only for SignatureMethod::RsaSha1 - a
-	 *                              PEM-encoded RSA public key. Ignored for HMAC-SHA1 and
-	 *                              PLAINTEXT, which verify against Credentials' own consumer/
-	 *                              token secrets instead.
+	 * @param ?string $rsaPublicKey Required, and used, only for SignatureMethod::RsaSha1 - the
+	 *                              key's own PEM content, not a path to it - see
+	 *                              RsaSha1Verifier's own constructor docblock for the exact
+	 *                              distinction. Ignored for HMAC-SHA1 and PLAINTEXT, which
+	 *                              verify against Credentials' own consumer/token secrets
+	 *                              instead.
 	 */
 	public function forMethod(
 		SignatureMethod $method,
@@ -53,6 +55,8 @@ final class RequestVerifierFactory {
 			SignatureMethod::Plaintext => new PlaintextSigner,
 			SignatureMethod::RsaSha1 => new RsaSha1Verifier($rsaPublicKey, $this->logger),
 		};
+
+		$this->logger->debug('oauth1.verifier_assembled', [ 'method' => $method->value ]);
 
 		return new RequestVerifier(
 			$verifier,

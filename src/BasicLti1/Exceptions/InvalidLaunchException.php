@@ -16,8 +16,9 @@ class InvalidLaunchException extends BasicLti1Exception {
 	public function __construct(
 		string $message,
 		private readonly LaunchValidationFailureReason $reason,
+		?string $consumerKey = null,
 	) {
-		parent::__construct($message);
+		parent::__construct($message, $consumerKey);
 	}
 
 	public function getReason(): LaunchValidationFailureReason {

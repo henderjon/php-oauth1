@@ -42,6 +42,17 @@ class RequestSignerFactoryTest extends TestCase {
 		(new RequestSignerFactory)->forMethod(SignatureMethod::RsaSha1);
 	}
 
+	public function testForMethodLogsADebugTraceOfTheMethodAssembled(): void {
+		$logger = new ArrayLogger;
+
+		(new RequestSignerFactory(logger: $logger))->forMethod(SignatureMethod::HmacSha1);
+
+		$debug = $logger->recordsAt('debug');
+		$this->assertCount(1, $debug);
+		$this->assertSame('oauth1.signer_assembled', $debug[0]['message']);
+		$this->assertSame('HMAC-SHA1', $debug[0]['context']['method']);
+	}
+
 	public function testForMethodLogsAnErrorForRsaSha1WithNoPrivateKey(): void {
 		$logger = new ArrayLogger;
 

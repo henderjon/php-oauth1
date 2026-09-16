@@ -15,6 +15,17 @@ use Psr\Log\NullLogger;
  */
 final class RsaSha1Signer implements SignerInterface {
 
+	/**
+	 * @param string $privateKey The key's own PEM content (e.g. `file_get_contents('key.pem')`),
+	 *                            not a path to it - `openssl_pkey_get_private()` also accepts a
+	 *                            `file://`-prefixed path as an incidental consequence of PHP's
+	 *                            stream wrapper support, since this class passes `$privateKey`
+	 *                            straight through untouched, but that is not this constructor's
+	 *                            documented contract, only openssl's own. A bare filename with no
+	 *                            scheme is not a path at all here - openssl treats it as literal,
+	 *                            invalid key content and this fails exactly like any other
+	 *                            unreadable key.
+	 */
 	public function __construct(
 		private readonly string $privateKey,
 		private readonly string $passphrase = '',
@@ -45,10 +56,13 @@ final class RsaSha1Signer implements SignerInterface {
 	private function fail( string $message, Credentials $credentials ): never {
 		$this->logger->error('oauth1.signing_failed', [
 			'consumer_key' => $credentials->consumerKey,
+			// See PemPreview's own docblock for why this is safe: a PEM header is fixed
+			// boilerplate, never derived from the key's own bytes.
+			'private_key_pem_header' => PemPreview::headerLine($this->privateKey),
 			'security_relevant' => false,
 		]);
 
-		throw new SigningException($message);
+		throw new SigningException($message, $credentials->consumerKey);
 	}
 
 }

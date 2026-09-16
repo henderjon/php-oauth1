@@ -26,6 +26,17 @@ class RequestVerifierFactoryTest extends TestCase {
 		(new RequestVerifierFactory)->forMethod(SignatureMethod::RsaSha1, new InMemoryCache);
 	}
 
+	public function testForMethodLogsADebugTraceOfTheMethodAssembled(): void {
+		$logger = new ArrayLogger;
+
+		(new RequestVerifierFactory(logger: $logger))->forMethod(SignatureMethod::HmacSha1, new InMemoryCache);
+
+		$debug = $logger->recordsAt('debug');
+		$this->assertCount(1, $debug);
+		$this->assertSame('oauth1.verifier_assembled', $debug[0]['message']);
+		$this->assertSame('HMAC-SHA1', $debug[0]['context']['method']);
+	}
+
 	public function testForMethodLogsAnErrorForRsaSha1WithNoPublicKey(): void {
 		$logger = new ArrayLogger;
 
