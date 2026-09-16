@@ -420,6 +420,11 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
       <h2>Index<a class="section-anchor" href="#index" aria-label="Link to this section">&para;</a></h2>
       <div class="index-columns">
         <div>
+          <h4>Getting Started</h4>
+          <ul>
+            <li><a href="#Terminology">Terminology</a></li>
+            <li><a href="#Logging">Logging</a></li>
+          </ul>
           <h4>Oauth1 &mdash; Signing</h4>
           <ul>
             <li><a href="#RequestSignerFactory">RequestSignerFactory</a></li>
@@ -495,6 +500,113 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
       </table>
     </div>
 
+    <!-- LOGGING -->
+    <div id="Logging">
+      <h2>Logging<a class="section-anchor" href="#Logging" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        Every constructor in this library takes an optional PSR-3 <code>Psr\Log\LoggerInterface</code>,
+        defaulting to a no-op <code>NullLogger</code> - passing one is opt-in. The scheme mirrors
+        <code>php-oidc</code>'s own:
+      </p>
+      <table>
+        <thead><tr><th>Level</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td><code>debug</code></td><td>The happy path. Every successful <code>sign()</code>/<code>verify()</code>/<code>build()</code> call, at every layer, logs one trace.</td></tr>
+          <tr><td><code>alert</code></td><td>A configuration choice worth a developer's own review, logged on <em>every</em> use, not once - currently just PLAINTEXT signing/verifying, which "MUST only be used over TLS" and this library has no way to enforce.</td></tr>
+          <tr><td><code>error</code></td><td>Every failure, always logged immediately before the exception it precedes is thrown - never after, never instead of. Always carries a <code>security_relevant</code> boolean.</td></tr>
+        </tbody>
+      </table>
+      <div class="alert-box">
+        <strong><code>warning</code> is unused.</strong> In <code>php-oidc</code> it marks a fail-open
+        decision or a clean "nothing found" lookup - this library has no fail-open path by design
+        (every check either passes or throws), so nothing here has an equivalent. This is a
+        deliberate omission, not a gap - revisit it only if a fail-open path is ever added.
+      </div>
+      <p id="security-relevant-taxonomy">
+        <code>security_relevant</code> is <code>true</code> only for the small set of outcomes that
+        are essentially unexplainable except as tampering or a replay attempt -
+        <a href="#VerificationFailureReason"><code>InvalidSignature</code></a> and
+        <a href="#VerificationFailureReason"><code>NonceReplayed</code></a>. Every other failure
+        (a missing parameter, an unsupported version/method, a mismatched consumer key, a
+        timestamp outside tolerance, an unreadable key, a missing Basic LTI parameter) is
+        <code>false</code>, since each is just as plausibly a caller mistake, a stale integration,
+        or ordinary clock skew as an attack. This mirrors <code>php-oidc</code>'s own curated list
+        (signature failure, <code>alg: none</code>, nonce mismatch are <code>true</code>; an
+        expired token or an audience mismatch - despite sounding just as security-relevant - are
+        <code>false</code>). <code>false</code> means "not in that curated set," never "confirmed
+        benign."
+      </p>
+      <h3>What gets logged, and what does not</h3>
+      <p>
+        The consumer secret, the token secret, and RSA key material are never logged, not even
+        partially - only <code>Credentials::$consumerKey</code> (a public identifier, the same
+        way <code>Oidc</code> always logs <code>client_id</code> in full but never
+        <code>client_secret</code>) ever appears in a log line. Two values needed a specific,
+        deliberate answer beyond "just don't log the secret":
+      </p>
+      <ul>
+        <li>
+          <strong>The signature base string.</strong> For a Basic LTI launch, the base string is
+          built from caller-supplied launch parameters that include PII (
+          <code>lis_person_name_full</code>, <code>lis_person_contact_email_primary</code>).
+          <code>RequestSigner</code>/<code>RequestVerifier</code> are generic - unlike
+          <code>Oidc\TokenEndpointClient</code>, which can name its own fixed, small set of
+          sensitive parameter keys to redact, this library has no way to know which of an
+          arbitrary caller's parameters are sensitive. Rather than guess, the
+          <code>oauth1.signature_base_string_built</code> debug line logs
+          <code>base_string_sha256</code> - a SHA-256 hash, not the string itself. That still
+          answers the one question the line exists for (did two parties build the identical base
+          string, checked by comparing the hash across their two logs) without the content, PII
+          included, ever landing in a log store.
+        </li>
+        <li>
+          <strong>An unreadable RSA key.</strong> <code>RsaSha1Signer</code>/
+          <code>RsaSha1Verifier</code> log <code>PemPreview::describe()</code>'s summary of the
+          key: its PEM header line (e.g. <code>-----BEGIN RSA PRIVATE KEY-----</code>) plus
+          whether the matching footer is present anywhere after it - both fixed boilerplate
+          defined by the PEM format itself, never derived from the key's own bytes. The header
+          alone distinguishes "the wrong key type was passed," "nothing was passed," and "this
+          was never a PEM at all" from each other, but says nothing about the single most common
+          real failure this exists for - a key truncated partway through keeps its header fully
+          intact, since that is always the first line - which is why the footer check exists
+          too, confirmed directly against a real key cut in half.
+        </li>
+      </ul>
+      <p>
+        Separately, <code>oauth_consumer_key</code> (in <code>RequestVerifier</code>) and
+        <code>resource_link_id</code> (in <code>LaunchVerifier</code>) are taken straight from an
+        incoming, not-yet-validated request and are unbounded in length until checked - both are
+        capped at 255 characters (<code>Truncate::to()</code>, UTF-8-safe unlike
+        <code>Oidc\Truncate</code>'s own byte-based cut - see <code>Truncate</code>'s docblock)
+        before appearing in any <em>log line</em>. 255 matches
+        <code>Oidc\IncomingAuthorizationResponse::MAX_ERROR_FIELD_LENGTH</code>'s own reasoning,
+        not <code>Oidc\AuthorizationStateStore</code>'s 64 - see <code>RequestVerifier</code>'s
+        own docblock for why a value this library never generates itself, with no spec length
+        limit, warrants a different cap than a value the library generates and bounds itself.
+        Neither the value a security comparison runs against nor the value
+        <code>RequestVerificationException</code>/<code>SigningException</code> actually carries
+        is ever capped - capping the comparison value would let a long-enough forged key collide
+        with a truncated legitimate prefix, and capping what an exception hands back to calling
+        code would silently give a caller a key that no longer matches anything in its own
+        store, if it tries to look one up after catching a failure. This is a deliberate
+        divergence from <code>Oidc\AuthorizationStateStore</code>, which caps what its own
+        exception carries too - see <code>RequestVerifier</code>'s own docblock for why a
+        library-generated, opaque correlation token like OIDC's <code>state</code> and a
+        caller-meaningful business identifier like a consumer key warrant different answers here.
+      </p>
+      <table>
+        <thead><tr><th>Class</th><th>Logs</th></tr></thead>
+        <tbody>
+          <tr><td><a href="#RequestSigner"><code>RequestSigner</code></a></td><td><code>debug</code> once the base string's hash is computed and again on success; <code>debug</code> when a caller-supplied request parameter collides with a reserved <code>oauth_*</code> one and is silently overridden; <code>alert</code> for PLAINTEXT; <code>error</code> (<code>false</code>) for a malformed URL.</td></tr>
+          <tr><td><a href="#RequestVerifier"><code>RequestVerifier</code></a></td><td><code>debug</code> once the base string's hash is recomputed and again on success; <code>alert</code> for PLAINTEXT; <code>error</code> for every <a href="#VerificationFailureReason"><code>VerificationFailureReason</code></a> (<code>true</code> for InvalidSignature/NonceReplayed, <code>false</code> otherwise) and for a malformed URL - <code>oauth_consumer_key</code> length-capped in every one of these log lines, never in the exception thrown alongside it.</td></tr>
+          <tr><td><a href="#RsaSha1Signer"><code>RsaSha1Signer</code></a> / <a href="#RsaSha1Verifier"><code>RsaSha1Verifier</code></a></td><td><code>debug</code> once the key loads/signs; <code>error</code> (<code>false</code>) for an unreadable key, with a header-plus-footer summary of it.</td></tr>
+          <tr><td><a href="#RequestSignerFactory"><code>RequestSignerFactory</code></a> / <a href="#RequestVerifierFactory"><code>RequestVerifierFactory</code></a></td><td><code>debug</code> naming the signature method assembled; <code>error</code> (<code>false</code>) for RSA-SHA1 requested with no key.</td></tr>
+          <tr><td><a href="#LaunchRequestBuilder"><code>LaunchRequestBuilder</code></a> / <a href="#LaunchVerifier"><code>LaunchVerifier</code></a></td><td><code>debug</code> on success (<code>resource_link_id</code> length-capped in <code>LaunchVerifier</code>); <code>debug</code> (builder only) when a caller-supplied <code>lti_message_type</code>/<code>lti_version</code> collides with the fixed value and is overridden; <code>error</code> (<code>false</code>) for a missing/invalid Basic LTI parameter.</td></tr>
+        </tbody>
+      </table>
+      <p><code>HmacSha1Signer</code>, <code>PlaintextSigner</code>, <code>SignatureBaseString</code>, <code>PercentEncoding</code>, and <code>NonceStore</code> log nothing themselves - each is a pure computation or a thin cache wrapper with no independent failure surface of its own; the layer that calls them (<code>RequestSigner</code>/<code>RequestVerifier</code>) is where a decision, and therefore a log line, actually belongs.</p>
+    </div>
+
     <!-- REQUEST SIGNER FACTORY -->
     <div class="type-section" id="RequestSignerFactory">
       <h2>type RequestSignerFactory<a class="section-anchor" href="#RequestSignerFactory" aria-label="Link to this section">&para;</a></h2>
@@ -521,8 +633,11 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
 }</div>
       <h3 id="RequestSignerFactory.forMethod">forMethod<a class="section-anchor" href="#RequestSignerFactory.forMethod" aria-label="Link to this section">&para;</a></h3>
       <p>
-        <code>$rsaPrivateKey</code> (a PEM-encoded RSA private key) is required, and used, only for
-        <code>SignatureMethod::RsaSha1</code> - throws <a href="#Oauth1Exceptions"><code>SigningException</code></a>
+        <code>$rsaPrivateKey</code> is the key's own PEM <em>content</em> (e.g.
+        <code>file_get_contents('key.pem')</code>), not a path to it - see
+        <a href="#RsaSha1Signer"><code>RsaSha1Signer</code></a>'s own note on the same
+        distinction. Required, and used, only for <code>SignatureMethod::RsaSha1</code> - throws
+        <a href="#Oauth1Exceptions"><code>SigningException</code></a>
         if omitted for that method. Ignored for <code>HmacSha1</code>/<code>Plaintext</code>, which
         sign with <a href="#Credentials"><code>Credentials</code></a>' own consumer/token secrets
         instead.
@@ -568,7 +683,8 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
       </p>
       <p>
         <code>oauth_timestamp</code> and <code>oauth_nonce</code> are omitted for PLAINTEXT, per
-        &sect;3.1 and &sect;3.4.4 - PLAINTEXT uses neither.
+        &sect;3.1 and &sect;3.4.4 - PLAINTEXT uses neither. Every PLAINTEXT call also logs an
+        <code>alert</code>, every time, not once - see <a href="#Logging">Logging</a>.
       </p>
       <pre><span class="comment">// RFC 5849 &sect;3.1 / &sect;3.4.1.1's own worked example, reproduced by this
 // library's test suite byte for byte (the signature base string) and via an
@@ -732,18 +848,29 @@ interface VerifierInterface {
         RFC 5849 &sect;3.4.3: RSASSA-PKCS1-v1_5 over the signature base string, using SHA-1 and the
         client's own RSA private key - never a shared secret.
       </p>
+      <div class="alert-box">
+        <code>$privateKey</code> is the key's own PEM <em>content</em> (e.g.
+        <code>file_get_contents('key.pem')</code>), not a path to it. A bare filename with no
+        scheme is not a path here either - PHP's underlying <code>openssl_pkey_get_private()</code>
+        treats it as literal, invalid key content, and this fails exactly like any other
+        unreadable key. A <code>file://</code>-prefixed path does work, as an incidental
+        consequence of PHP's own stream wrapper support (this class passes <code>$privateKey</code>
+        straight through untouched) - but that is <code>openssl</code>'s contract, not one this
+        constructor documents or was tested against.
+      </div>
       <div class="method-sig">final class RsaSha1Signer implements SignerInterface {
 
     public function __construct(
         string $privateKey,
         string $passphrase = "",
+        Psr\Log\LoggerInterface $logger = new NullLogger,
     )
 
     public function method(): SignatureMethod
     public function sign(string $baseString, Credentials $credentials): string
 
 }</div>
-      <p>Throws <a href="#Oauth1Exceptions"><code>SigningException</code></a> if the private key cannot be read, or if <code>openssl_sign()</code> itself rejects the input.</p>
+      <p>Throws <a href="#Oauth1Exceptions"><code>SigningException</code></a> if the private key cannot be read, or if <code>openssl_sign()</code> itself rejects the input - logging an <code>error</code> (<code>security_relevant: false</code>, carrying <code>PemPreview::describe()</code>'s header-plus-footer summary of the key, never any of its actual bytes) immediately before, and a <code>debug</code> trace on success. See <a href="#Logging">Logging</a>.</p>
       <p class="back-to-index"><a href="#index">↑ back to index</a></p>
     </div>
 
@@ -756,16 +883,23 @@ interface VerifierInterface {
         <a href="#RsaSha1Signer"><code>RsaSha1Signer</code></a> - one key material never signs and
         verifies through the same object, since a client is only ever issued its own private key.
       </p>
+      <div class="alert-box">
+        <code>$publicKey</code> is the key's own PEM <em>content</em>, not a path to it - see
+        <a href="#RsaSha1Signer"><code>RsaSha1Signer</code></a>'s matching note for the exact
+        same reasoning, applied to <code>openssl_pkey_get_public()</code> here.
+      </div>
       <div class="method-sig">final class RsaSha1Verifier implements VerifierInterface {
 
     public function __construct(
         string $publicKey,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
     )
 
     public function method(): SignatureMethod
     public function verify(string $baseString, Credentials $credentials, string $signature): bool
 
 }</div>
+      <p>Throws <a href="#Oauth1Exceptions"><code>SigningException</code></a> if the public key cannot be read - logging an <code>error</code> (<code>security_relevant: false</code>, carrying <code>PemPreview::describe()</code>'s header-plus-footer summary of the key, never any of its actual bytes) immediately before, and a <code>debug</code> trace once the key loads. See <a href="#Logging">Logging</a>.</p>
       <p class="back-to-index"><a href="#index">↑ back to index</a></p>
     </div>
 
@@ -802,7 +936,8 @@ interface VerifierInterface {
         <code>$nonceCache</code> is a PSR-16 cache used to record which nonces have already been
         seen, so a replayed request is rejected the second time - session storage is fine for a
         single-server app; a load-balanced deployment needs something shared (Memcache, Redis)
-        injected here instead. <code>$rsaPublicKey</code> (a PEM-encoded RSA public key) is
+        injected here instead. <code>$rsaPublicKey</code> is the key's own PEM content, not a
+        path to it (see <a href="#RsaSha1Verifier"><code>RsaSha1Verifier</code></a>'s own note) -
         required, and used, only for <code>SignatureMethod::RsaSha1</code>.
       </p>
       <p class="back-to-index"><a href="#index">↑ back to index</a></p>
@@ -820,7 +955,9 @@ interface VerifierInterface {
       <div class="alert-box">
         Fail-closed: every failure throws <a href="#Oauth1Exceptions"><code>RequestVerificationException</code></a>
         rather than returning <code>false</code> - a caller cannot accidentally treat "did not
-        check" the same as "checked and passed".
+        check" the same as "checked and passed". Every one of those failures also logs an
+        <code>error</code> immediately before throwing, and PLAINTEXT logs an <code>alert</code>
+        on every call - see <a href="#Logging">Logging</a>.
       </div>
       <div class="method-sig">final class RequestVerifier {
 
@@ -896,12 +1033,26 @@ final class RandomNonceGenerator implements NonceGeneratorInterface {
     <div class="type-section" id="Oauth1Exceptions">
       <h2>namespace Oauth1\Exceptions<a class="section-anchor" href="#Oauth1Exceptions" aria-label="Link to this section">&para;</a></h2>
       <p>Every exception here extends <code>OAuth1Exception</code> (itself a plain <code>\RuntimeException</code>), so a caller that only wants one catch clause for "signing or verification failed" always has one available.</p>
+      <p>
+        <code>OAuth1Exception</code> also carries <code>getConsumerKey(): ?string</code> - the
+        <code>oauth_consumer_key</code> this failure happened against, when one was in scope.
+        It is null for a failure with nothing yet to correlate with: a malformed URL passed
+        directly to <code>SignatureBaseString</code> (excluded from the public docs, see the
+        footer), or a factory misconfigured before any specific request is in play
+        (<code>RequestSignerFactory</code>/<code>RequestVerifierFactory</code> requesting
+        RSA-SHA1 with no key). When <code>RequestSigner</code>/<code>RequestVerifier</code> catch
+        that same malformed-URL <code>SigningException</code> from <code>SignatureBaseString</code>,
+        they do not rethrow it as-is - they construct a new one carrying the consumer key they
+        have and the original as its own <code>getPrevious()</code>, the same boundary-attach
+        pattern <code>Oidc\OpenIDConnectClient</code> uses to add an ID token a lower-level
+        collaborator's own exception has no way to carry.
+      </p>
       <table>
         <thead><tr><th>Exception</th><th>Thrown when</th><th>Carries</th></tr></thead>
         <tbody>
-          <tr><td><code>OAuth1Exception</code></td><td>Base class for every exception below. Never thrown directly.</td><td>&mdash;</td></tr>
-          <tr><td><code>SigningException</code></td><td>A signer or verifier cannot even attempt a signature - a malformed URL with no scheme/host, an unreadable RSA key, or <code>openssl</code> itself rejecting the input.</td><td>&mdash;</td></tr>
-          <tr><td><code>RequestVerificationException</code></td><td>A request fails verification for any of the reasons <a href="#VerificationFailureReason"><code>VerificationFailureReason</code></a> lists.</td><td><code>getReason(): VerificationFailureReason</code></td></tr>
+          <tr><td><code>OAuth1Exception</code></td><td>Base class for every exception below. Never thrown directly.</td><td><code>getConsumerKey()</code></td></tr>
+          <tr><td><code>SigningException</code></td><td>A signer or verifier cannot even attempt a signature - a malformed URL with no scheme/host, an unreadable RSA key, or <code>openssl</code> itself rejecting the input.</td><td><code>getConsumerKey()</code></td></tr>
+          <tr><td><code>RequestVerificationException</code></td><td>A request fails verification for any of the reasons <a href="#VerificationFailureReason"><code>VerificationFailureReason</code></a> lists.</td><td><code>getConsumerKey()</code>, <code>getReason(): VerificationFailureReason</code></td></tr>
         </tbody>
       </table>
       <div class="alert-box">Exception messages here are safe to log but are not written for end users.</div>
@@ -917,10 +1068,21 @@ final class RandomNonceGenerator implements NonceGeneratorInterface {
         the HMAC-SHA1 signing method" - so a caller never has an opportunity to wire up a signature
         method Basic LTI does not allow.
       </p>
+      <p>
+        Takes the same raw collaborators (nonce generator, clock, logger)
+        <a href="#RequestSignerFactory"><code>Oauth1\RequestSignerFactory</code></a> does, rather
+        than a pre-built one, and builds one internally - mirroring
+        <code>Oidc\OpenIDConnectClientFactory</code>'s own pattern. This is what lets one
+        <code>$logger</code> passed here reach both this layer's own <code>debug</code>/<code>error</code>
+        calls and <code>RequestSigner</code>'s, without wiring the same logger into two factories
+        separately. See <a href="#Logging">Logging</a>.
+      </p>
       <div class="method-sig">final class LaunchRequestBuilderFactory {
 
     public function __construct(
-        Oauth1\RequestSignerFactory $signerFactory = new Oauth1\RequestSignerFactory,
+        Oauth1\NonceGeneratorInterface $nonceGenerator = new Oauth1\RandomNonceGenerator,
+        Psr\Clock\ClockInterface $clock = new Oauth1\CurrentClock,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
     )
 
     public function make(): LaunchRequestBuilder
@@ -941,6 +1103,7 @@ final class RandomNonceGenerator implements NonceGeneratorInterface {
 
     public function __construct(
         Oauth1\RequestSigner $signer,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
     )
 
     public function build(
@@ -950,6 +1113,7 @@ final class RandomNonceGenerator implements NonceGeneratorInterface {
     ): LaunchRequest
 
 }</div>
+      <p>Logs a <code>debug</code> trace on success, or an <code>error</code> (<code>security_relevant: false</code>) immediately before throwing <a href="#BasicLti1Exceptions"><code>InvalidLaunchException</code></a> for a missing <code>resource_link_id</code>. See <a href="#Logging">Logging</a>.</p>
       <div class="alert-box">
         <strong>oauth_callback is deliberately not signed.</strong> It is added to the launch as a
         plain, unsigned parameter set to <code>about:blank</code> - not passed through
@@ -1010,10 +1174,12 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
     <div class="type-section" id="LaunchVerifierFactory">
       <h2>type LaunchVerifierFactory<a class="section-anchor" href="#LaunchVerifierFactory" aria-label="Link to this section">&para;</a></h2>
       <p>Assembles a <a href="#LaunchVerifier"><code>LaunchVerifier</code></a> wired to HMAC-SHA1 - see <a href="#LaunchRequestBuilderFactory"><code>LaunchRequestBuilderFactory</code></a> for why that is the only signature method Basic LTI allows.</p>
+      <p>Takes the same raw collaborators (clock, logger) <a href="#RequestVerifierFactory"><code>Oauth1\RequestVerifierFactory</code></a> does, rather than a pre-built one - see <a href="#LaunchRequestBuilderFactory"><code>LaunchRequestBuilderFactory</code></a>'s docblock for why, on the signing side, that same reasoning applies here too.</p>
       <div class="method-sig">final class LaunchVerifierFactory {
 
     public function __construct(
-        Oauth1\RequestVerifierFactory $verifierFactory = new Oauth1\RequestVerifierFactory,
+        Psr\Clock\ClockInterface $clock = new Oauth1\CurrentClock,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
     )
 
     public function make(
@@ -1040,6 +1206,7 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
 
     public function __construct(
         Oauth1\RequestVerifier $requestVerifier,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
     )
 
     public function verify(
@@ -1049,6 +1216,12 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
     ): void
 
 }</div>
+      <p>
+        Logs a <code>debug</code> trace on success, or an <code>error</code> (always
+        <code>security_relevant: false</code> - see this class's own docblock for why) immediately
+        before throwing <a href="#BasicLti1Exceptions"><code>InvalidLaunchException</code></a> for
+        any of the three content checks above. See <a href="#Logging">Logging</a>.
+      </p>
       <div class="throws-list">
         <p>Throws <code>Oauth1\Exceptions\RequestVerificationException</code> for a signature/timestamp/nonce failure - never caught or wrapped here, so a caller distinguishing OAuth failures from Basic LTI content failures can catch it directly. Throws <a href="#BasicLti1Exceptions"><code>InvalidLaunchException</code></a> for a missing/invalid Basic LTI parameter, once the signature itself has already checked out.</p>
       </div>
@@ -1087,11 +1260,12 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
     <div class="type-section" id="BasicLti1Exceptions">
       <h2>namespace BasicLti1\Exceptions<a class="section-anchor" href="#BasicLti1Exceptions" aria-label="Link to this section">&para;</a></h2>
       <p>Every exception here extends <code>BasicLti1Exception</code> (itself a plain <code>\RuntimeException</code>) - a separate hierarchy from <a href="#Oauth1Exceptions"><code>Oauth1\Exceptions\*</code></a>, since a signature failure and a Basic LTI content failure are different concerns.</p>
+      <p><code>BasicLti1Exception</code> also carries <code>getConsumerKey(): ?string</code> - mirrors <code>Oauth1\Exceptions\OAuth1Exception</code>'s own rider of the same name; see that section for the full reasoning.</p>
       <table>
         <thead><tr><th>Exception</th><th>Thrown when</th><th>Carries</th></tr></thead>
         <tbody>
-          <tr><td><code>BasicLti1Exception</code></td><td>Base class for every exception below. Never thrown directly.</td><td>&mdash;</td></tr>
-          <tr><td><code>InvalidLaunchException</code></td><td>A launch is missing or carries the wrong value for <code>lti_message_type</code>, <code>lti_version</code>, or <code>resource_link_id</code>.</td><td><code>getReason(): LaunchValidationFailureReason</code></td></tr>
+          <tr><td><code>BasicLti1Exception</code></td><td>Base class for every exception below. Never thrown directly.</td><td><code>getConsumerKey()</code></td></tr>
+          <tr><td><code>InvalidLaunchException</code></td><td>A launch is missing or carries the wrong value for <code>lti_message_type</code>, <code>lti_version</code>, or <code>resource_link_id</code>.</td><td><code>getConsumerKey()</code>, <code>getReason(): LaunchValidationFailureReason</code></td></tr>
         </tbody>
       </table>
       <p class="back-to-index"><a href="#index">↑ back to index</a></p>
@@ -1105,9 +1279,11 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
       Documentation generated for the public API surface under <code>Oauth1\</code>,
       <code>Oauth1\Exceptions\</code>, <code>BasicLti1\</code>, and
       <code>BasicLti1\Exceptions\</code>. Internal collaborators - the signature base string
-      builder, the percent-encoding helper, and <code>NonceStore</code> (which wraps a PSR-16
-      cache the same way <code>php-oidc</code>'s <code>AuthorizationStateStore</code> does) - are
-      intentionally not documented here. See the reference specs this library implements against
+      builder, the percent-encoding helper, <code>NonceStore</code> (which wraps a PSR-16
+      cache the same way <code>php-oidc</code>'s <code>AuthorizationStateStore</code> does),
+      and the two logging-safety helpers <code>Truncate</code> and <code>PemPreview</code>
+      (see <a href="#Logging">Logging</a>) - are intentionally not documented here. See the
+      reference specs this library implements against
       in <a href="https://github.com/henderjon/php-oauth1/tree/dev/specs"><code>specs/</code></a>:
       RFC 5849, the Basic LTI v1.0 Implementation Guide, and the LTI v1.1 Implementation Guide.
     </p>

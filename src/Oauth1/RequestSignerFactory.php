@@ -25,22 +25,32 @@ final class RequestSignerFactory {
 	}
 
 	/**
-	 * @param ?string $rsaPrivateKey Required, and used, only for SignatureMethod::RsaSha1 - a
-	 *                               PEM-encoded RSA private key. Ignored for HMAC-SHA1 and
-	 *                               PLAINTEXT, which sign with Credentials' own consumer/token
-	 *                               secrets instead.
+	 * @param ?string $rsaPrivateKey Required, and used, only for SignatureMethod::RsaSha1 - the
+	 *                               key's own PEM content (e.g. `file_get_contents('key.pem')`),
+	 *                               not a path to it - see RsaSha1Signer's own constructor
+	 *                               docblock for the exact distinction. Ignored for HMAC-SHA1
+	 *                               and PLAINTEXT, which sign with Credentials' own consumer/
+	 *                               token secrets instead.
 	 * @param string  $rsaPassphrase The private key's passphrase, when it has one. Ignored
 	 *                               outside RSA-SHA1.
 	 */
 	public function forMethod( SignatureMethod $method, ?string $rsaPrivateKey = null, string $rsaPassphrase = '' ): RequestSigner {
+		if ( $method === SignatureMethod::RsaSha1 && $rsaPrivateKey === null ) {
+			$this->logger->error('oauth1.signer_factory_misconfigured', [
+				'method' => $method->value,
+				'security_relevant' => false,
+			]);
+
+			throw new SigningException('RSA-SHA1 requires a private key');
+		}
+
 		$signer = match ( $method ) {
 			SignatureMethod::HmacSha1 => new HmacSha1Signer,
 			SignatureMethod::Plaintext => new PlaintextSigner,
-			SignatureMethod::RsaSha1 => new RsaSha1Signer(
-				$rsaPrivateKey ?? throw new SigningException('RSA-SHA1 requires a private key'),
-				$rsaPassphrase,
-			),
+			SignatureMethod::RsaSha1 => new RsaSha1Signer($rsaPrivateKey, $rsaPassphrase, $this->logger),
 		};
+
+		$this->logger->debug('oauth1.signer_assembled', [ 'method' => $method->value ]);
 
 		return new RequestSigner($signer, $this->nonceGenerator, $this->clock, $this->logger);
 	}

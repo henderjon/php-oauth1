@@ -14,4 +14,10 @@ class RequestVerificationExceptionTest extends TestCase {
 		$this->assertSame('nonce replayed', $exception->getMessage());
 	}
 
+	public function testGetConsumerKeyIsInheritedFromTheBaseException(): void {
+		$exception = new RequestVerificationException('nonce replayed', VerificationFailureReason::NonceReplayed, 'the-consumer-key');
+
+		$this->assertSame('the-consumer-key', $exception->getConsumerKey());
+	}
+
 }

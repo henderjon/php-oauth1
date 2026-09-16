@@ -83,13 +83,21 @@ its own class.
   consumer-key checks must throw a package exception when the expected value is missing, invalid, or ambiguous,
   never silently skip the check. A missing value because "it should always be there" is exactly the case that must
   still be verified.
-- **Log levels.** `debug` traces the happy path (`RequestSigner`/`RequestVerifier` log one line each on success).
-  `warning` is a rejection worth seeing in aggregate without treating as an application error - currently just a
-  signature mismatch in `RequestVerifier`. Neither library logs at `alert` or `error`, or carries a
-  `security_relevant` context flag, the way `php-oidc` does - that scheme exists there because a config choice
-  (TLS disabled, an untrusted audience allowed) is a real, ongoing decision surface in an OIDC client. Nothing here
-  has an equivalent: HMAC-SHA1 is the only method Basic LTI allows, PLAINTEXT's TLS requirement is the caller's
-  responsibility to enforce (see `PlaintextSigner`'s docblock), and every verification failure already throws.
+- **Log levels.** Mirrors `php-oidc`'s own scheme exactly - see `docs/index.html`'s Logging section for the full
+  level table, the curated `security_relevant: true` list, and the class-by-class table of what logs what. In
+  short: `debug` traces the happy path, at every layer, on every successful `sign()`/`verify()`/`build()` call.
+  `alert` is a configuration choice worth a developer's own review, logged on every use, not once - currently just
+  PLAINTEXT signing/verifying, which "MUST only be used over TLS" and this library cannot enforce (see
+  `PlaintextSigner`'s docblock). `error` is every failure, logged immediately before the exception it precedes is
+  thrown - every throw site in `RequestSigner`, `RequestVerifier`, the two factories, `RsaSha1Signer`/
+  `RsaSha1Verifier`, `LaunchRequestBuilder`, and `LaunchVerifier` has a paired `error()` call, no exceptions. Every
+  `error()` call carries `security_relevant`, `true` only for `InvalidSignature`/`NonceReplayed` - the two outcomes
+  unexplainable except as tampering or replay - `false` everywhere else, matching how `php-oidc`'s own curated list
+  stays small (an expired token or audience mismatch is `false` there too). `warning` is deliberately unused: it
+  marks a fail-open decision or a clean "nothing found" lookup in `php-oidc`, and this library has no fail-open
+  path by design - every check either passes or throws. Revisit only if that changes.
+  `SignatureBaseString`, `PercentEncoding`, and `NonceStore` log nothing themselves - pure computation or a thin
+  cache wrapper with no independent failure surface; the layer that calls them is where the log line belongs.
   Revisit this note - and add a Logging section to `docs/index.html` - if that changes.
 - **Typing.** Type every parameter and return, using native PHP types first and PHPDoc (`@param`, `@return`,
   array-shape syntax) only where types fall short or where an argument's shape needs documenting. Prefer `iterable`

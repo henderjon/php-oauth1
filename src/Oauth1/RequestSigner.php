@@ -2,6 +2,7 @@
 
 namespace Oauth1;
 
+use Oauth1\Exceptions\SigningException;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -13,7 +14,11 @@ use Psr\Log\NullLogger;
  * PLAINTEXT is a constructor argument, never a branch in this class.
  *
  * `oauth_timestamp` and `oauth_nonce` are omitted for PLAINTEXT, per §3.1 and §3.4.4 - PLAINTEXT
- * uses neither, so including them would only be dead weight on the wire.
+ * uses neither, so including them would only be dead weight on the wire. Every PLAINTEXT sign()
+ * call also logs an `alert` - PLAINTEXT "MUST only be used over TLS" (§3.4.4), a configuration
+ * choice worth a developer's own review, and this class has no way to enforce it. Logged every
+ * time, not once, since every request made this way is unauthenticated if TLS is not actually in
+ * place - mirroring Oidc\CurlHttpFetcher's own TLS-disabled alert.
  */
 final class RequestSigner {
 
@@ -58,16 +63,16 @@ final class RequestSigner {
 			$oauthParameters['oauth_callback'] = $callback;
 		}
 
-		if ( $this->signer->method() !== SignatureMethod::Plaintext ) {
+		if ( $this->signer->method() === SignatureMethod::Plaintext ) {
+			$this->logger->alert('oauth1.plaintext_method_used', [ 'consumer_key' => $credentials->consumerKey ]);
+		} else {
 			$oauthParameters['oauth_timestamp'] = (string) $this->clock->now()->getTimestamp();
 			$oauthParameters['oauth_nonce']     = $this->nonceGenerator->generate();
 		}
 
 		$oauthParameters['oauth_version'] = '1.0';
 
-		$baseString = $this->signer->method() === SignatureMethod::Plaintext
-			? ''
-			: SignatureBaseString::build($httpMethod, $url, [ ...$requestParameters, ...$oauthParameters ]);
+		$baseString = $this->signer->method() === SignatureMethod::Plaintext ? '' : $this->baseString($httpMethod, $url, $requestParameters, $oauthParameters, $credentials);
 
 		$oauthParameters['oauth_signature'] = $this->signer->sign($baseString, $credentials);
 
@@ -77,6 +82,59 @@ final class RequestSigner {
 		]);
 
 		return new SignedRequest($oauthParameters);
+	}
+
+	/**
+	 * @param array<string,string|list<string>> $requestParameters
+	 * @param array<string,string>              $oauthParameters
+	 */
+	private function baseString( string $httpMethod, string $url, array $requestParameters, array $oauthParameters, Credentials $credentials ): string {
+		// [ ...$requestParameters, ...$oauthParameters ] below always lets $oauthParameters win
+		// a key collision silently - the real oauth_* values are correct either way, but this
+		// is the only place that says a caller-supplied oauth_* value in $requestParameters
+		// (almost certainly a mistake) got replaced, mirroring Oidc's own "extraAuthParams
+		// collided with a reserved param" debug.
+		$overriddenKeys = array_values(array_intersect(array_keys($requestParameters), array_keys($oauthParameters)));
+		if ( $overriddenKeys !== [] ) {
+			$this->logger->debug('oauth1.reserved_parameter_overridden', [
+				'consumer_key' => $credentials->consumerKey,
+				'overridden_keys' => $overriddenKeys,
+			]);
+		}
+
+		try {
+			$baseString = SignatureBaseString::build($httpMethod, $url, [ ...$requestParameters, ...$oauthParameters ]);
+		} catch ( SigningException $exception ) {
+			// Rewrapped, not rethrown as-is: SignatureBaseString has no Credentials in scope to
+			// attach a consumer key to its own exception, but this layer does - see
+			// RequestVerifier::baseString()'s matching comment. Constructed before logging, not
+			// after, so the exception object in the log line below and the one actually thrown
+			// are the same instance - logging the original would show a null consumer key in
+			// the log's 'exception' value while the caller's caught exception carries the real
+			// one, two different answers to "what does this exception's own getConsumerKey()
+			// return" for what looks like one event.
+			$rewrapped = new SigningException($exception->getMessage(), $credentials->consumerKey, $exception);
+
+			$this->logger->error('oauth1.signing_failed', [
+				'consumer_key' => $credentials->consumerKey,
+				'exception' => $rewrapped,
+				'security_relevant' => false,
+			]);
+
+			throw $rewrapped;
+		}
+
+		// See RequestVerifier::baseString()'s matching comment: this logs a hash, not the raw
+		// base string, since $requestParameters is caller-supplied and this class has no way
+		// to know whether it carries PII (Basic LTI's own launch parameters do). The hash still
+		// answers the one question this log line exists for - do two parties' base strings
+		// match - without ever putting their content into a log store.
+		$this->logger->debug('oauth1.signature_base_string_built', [
+			'consumer_key' => $credentials->consumerKey,
+			'base_string_sha256' => hash('sha256', $baseString),
+		]);
+
+		return $baseString;
 	}
 
 }

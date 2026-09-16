@@ -4,6 +4,7 @@ namespace BasicLti1;
 
 use BasicLti1\Exceptions\InvalidLaunchException;
 use Oauth1\Credentials;
+use Oauth1\Fakes\ArrayLogger;
 use Oauth1\Fakes\FixedClock;
 use Oauth1\Fakes\FixedNonceGenerator;
 use Oauth1\HmacSha1Signer;
@@ -76,6 +77,63 @@ class LaunchRequestBuilderTest extends TestCase {
 
 		$this->assertSame('basic-lti-launch-request', $launch->parameters['lti_message_type']);
 		$this->assertSame('LTI-1p0', $launch->parameters['lti_version']);
+	}
+
+	public function testBuildLogsADebugTraceOnSuccess(): void {
+		$logger  = new ArrayLogger;
+		$builder = new LaunchRequestBuilder(new RequestSigner(new HmacSha1Signer), $logger);
+
+		$builder->build('http://example.com/launch', new Credentials('key', 'secret'), [ 'resource_link_id' => 'link-1' ]);
+
+		$debug = $logger->recordsAt('debug');
+		$this->assertCount(1, $debug);
+		$this->assertSame('basiclti1.launch_built', $debug[0]['message']);
+		$this->assertSame('key', $debug[0]['context']['consumer_key']);
+		$this->assertSame('link-1', $debug[0]['context']['resource_link_id']);
+		$this->assertSame([], $logger->recordsAboveDebug());
+	}
+
+	public function testBuildLogsADebugTraceWhenACallerSuppliedMessageTypeOrVersionIsOverridden(): void {
+		$logger  = new ArrayLogger;
+		$builder = new LaunchRequestBuilder(new RequestSigner(new HmacSha1Signer), $logger);
+
+		$builder->build('http://example.com/launch', new Credentials('key', 'secret'), [
+			'resource_link_id' => 'link-1',
+			'lti_message_type' => 'something-else',
+			'lti_version' => 'LTI-9p9',
+		]);
+
+		$debug = $logger->recordsAt('debug');
+		$overridden = array_values(array_filter($debug, fn ( array $r ) => $r['message'] === 'basiclti1.reserved_parameter_overridden'));
+		$this->assertCount(1, $overridden);
+		$this->assertSame([ 'lti_message_type', 'lti_version' ], $overridden[0]['context']['overridden_keys']);
+	}
+
+	public function testBuildDoesNotLogAnOverrideWhenTheCallerNeverSuppliedMessageTypeOrVersion(): void {
+		$logger  = new ArrayLogger;
+		$builder = new LaunchRequestBuilder(new RequestSigner(new HmacSha1Signer), $logger);
+
+		$builder->build('http://example.com/launch', new Credentials('key', 'secret'), [ 'resource_link_id' => 'link-1' ]);
+
+		$overridden = array_filter($logger->recordsAt('debug'), fn ( array $r ) => $r['message'] === 'basiclti1.reserved_parameter_overridden');
+		$this->assertSame([], $overridden);
+	}
+
+	public function testBuildLogsAnErrorAndThrowsWhenResourceLinkIdIsMissing(): void {
+		$logger  = new ArrayLogger;
+		$builder = new LaunchRequestBuilder(new RequestSigner(new HmacSha1Signer), $logger);
+
+		try {
+			$builder->build('http://example.com/launch', new Credentials('key', 'secret'), []);
+			$this->fail('Expected an InvalidLaunchException');
+		} catch ( InvalidLaunchException $exception ) {
+			$errors = $logger->recordsAt('error');
+			$this->assertCount(1, $errors);
+			$this->assertSame('basiclti1.launch_build_failed', $errors[0]['message']);
+			$this->assertSame(LaunchValidationFailureReason::MissingResourceLinkId->name, $errors[0]['context']['reason']);
+			$this->assertFalse($errors[0]['context']['security_relevant']);
+			$this->assertSame('key', $exception->getConsumerKey());
+		}
 	}
 
 }
