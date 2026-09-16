@@ -25,6 +25,7 @@ Install the package with Composer:
 composer require henderjon/php-oauth1
 ```
 
-See the [API documentation](https://henderjon.github.io/php-oauth1/) for the full public API reference (docs/).
+See the [example harness](example/README.md) for a full Basic LTI 1.0 launch running over real HTTP between two apps, or the
+[API documentation](https://henderjon.github.io/php-oauth1/) for the full public API reference (docs/).
 
 See also: [packagist](https://packagist.org/packages/henderjon/php-oauth1).
