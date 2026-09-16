@@ -1,0 +1,1669 @@
+
+<!DOCTYPE html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="Generator" content="Drupal 7 (http://drupal.org)" />
+<link rel="canonical" href="/specs/ltiv1p0/implementation-guide" />
+<link rel="shortlink" href="/node/52186" />
+<link rel="shortcut icon" href="https://www.imsglobal.org/sites/default/files/favicon_0.ico" type="image/vnd.microsoft.icon" />
+<title>1EdTech Learning Tools Interoperability™ Basic LTIv1 Implementation Guide | IMS Global Learning Consortium</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style type="text/css" media="all">
+@import url("https://www.imsglobal.org/modules/system/system.base.css?tkd65r");
+@import url("https://www.imsglobal.org/modules/system/system.menus.css?tkd65r");
+@import url("https://www.imsglobal.org/modules/system/system.messages.css?tkd65r");
+@import url("https://www.imsglobal.org/modules/system/system.theme.css?tkd65r");
+</style>
+<style type="text/css" media="all">
+@import url("https://www.imsglobal.org/sites/all/modules/jquery_update/replace/ui/themes/base/minified/jquery.ui.core.min.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/jquery_update/replace/ui/themes/base/minified/jquery.ui.theme.min.css?tkd65r");
+</style>
+<style type="text/css" media="all">
+@import url("https://www.imsglobal.org/modules/book/book.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/calendar/css/calendar_multiday.css?tkd65r");
+@import url("https://www.imsglobal.org/modules/comment/comment.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/contrib/date/date_repeat_field/date_repeat_field.css?tkd65r");
+@import url("https://www.imsglobal.org/modules/field/theme/field.css?tkd65r");
+@import url("https://www.imsglobal.org/modules/node/node.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/pd_reports_module/css/global.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/pd_reports_module/css/plugins/datepicker/daterangepicker.css?tkd65r");
+@import url("https://www.imsglobal.org/modules/poll/poll.css?tkd65r");
+@import url("https://www.imsglobal.org/modules/search/search.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/toc_node/css/toc_node.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/ubercart/uc_order/uc_order.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/ubercart/uc_product/uc_product.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/ubercart/uc_store/uc_store.css?tkd65r");
+@import url("https://www.imsglobal.org/modules/user/user.css?tkd65r");
+@import url("https://www.imsglobal.org/modules/forum/forum.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/views/css/views.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/contrib/media/modules/media_wysiwyg/css/media_wysiwyg.base.css?tkd65r");
+</style>
+<style type="text/css" media="all">
+@import url("https://www.imsglobal.org/sites/all/modules/colorbox/styles/default/colorbox_style.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/contrib/ctools/css/ctools.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/contrib/ctools/css/modal.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/tagclouds/tagclouds.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/user_dashboard/user_dashboard.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/taxonomy_access/taxonomy_access.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/modules/productdirectory/css/tooltip.css?tkd65r");
+</style>
+<link type="text/css" rel="stylesheet" href="//use.fontawesome.com/releases/v5.5.0/css/all.css" media="all" />
+<style type="text/css" media="all">
+@import url("https://www.imsglobal.org/sites/all/libraries/superfish/css/superfish.css?tkd65r");
+</style>
+<style type="text/css" media="all">
+@import url("https://www.imsglobal.org/sites/all/themes/ims/assets/css/megamenu-demo.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/themes/ims/assets/css/bootstrap-theme.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/themes/ims/assets/css/bootstrap.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/themes/ims/assets/css/imsglobal.css?tkd65r");
+@import url("https://www.imsglobal.org/sites/all/themes/ims/assets/css/style.css?tkd65r");
+</style>
+<style type="text/css" media="print">
+@import url("https://www.imsglobal.org/sites/all/themes/ims/assets/css/imsglobal.print.css?tkd65r");
+</style>
+<link type="text/css" rel="stylesheet" href="https://www.imsglobal.org/sites/default/files/cpn/52186.css?tkd65r" media="all" />
+<link type="text/css" rel="stylesheet" href="https://www.imsglobal.org/sites/default/files/cpn/block-606.css?tkd65r" media="all" />
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+window.jQuery || document.write("<script src='/sites/all/modules/jquery_update/replace/jquery/1.8/jquery.min.js'>\x3C/script>")
+//--><!]]>
+</script>
+<script type="text/javascript" src="https://www.imsglobal.org/sites/default/files/js/js_Hfha9RCTNm8mqMDLXriIsKGMaghzs4ZaqJPLj2esi7s.js"></script>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+window.jQuery.ui || document.write("<script src='/sites/all/modules/jquery_update/replace/ui/ui/minified/jquery-ui.min.js'>\x3C/script>")
+//--><!]]>
+</script>
+<script type="text/javascript" src="https://www.imsglobal.org/sites/default/files/js/js_FVhN18bbqzYEkTilvl31hOmd8NQtZUZya3wnwWYKd_Y.js"></script>
+<script type="text/javascript" src="https://www.imsglobal.org/sites/default/files/js/js_R9UbiVw2xuTUI0GZoaqMDOdX0lrZtgX-ono8RVOUEVc.js"></script>
+<script type="text/javascript" src="https://www.imsglobal.org/sites/default/files/js/js_FPlog9xS7DSPOzwTQpa_x7neeHKdGaEmkSk-VAWs0iw.js"></script>
+<script type="text/javascript" src="https://www.imsglobal.org/sites/default/files/googleanalytics/js?tkd65r"></script>
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments)};gtag("js", new Date());gtag("set", "developer_id.dMDhkMT", true);gtag("config", "G-WL2WTVSYLS", {"groups":"default","cookie_domain":".www.imsglobal.org","anonymize_ip":true,"page_path":location.pathname + location.search + location.hash});
+//--><!]]>
+</script>
+<script type="text/javascript" src="https://www.imsglobal.org/sites/default/files/js/js_VH5BAh4yKQRji3908zXxKd4OYLTi4nYB_gUlAs7XPps.js"></script>
+<script type="text/javascript" src="https://www.imsglobal.org/sites/default/files/js/js_yhsbrLq6rey-8N-mWiOn-d58_EGVcnv8YAuMW-xXVjI.js"></script>
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","setHasJsCookie":0,"ajaxPageState":{"theme":"ims","theme_token":"k7rjIZWSNeakBF_Lpb3dNSjUoo9ACCn7eEBWd9-CbKA","jquery_version":"1.8","js":{"\/\/ajax.googleapis.com\/ajax\/libs\/jquery\/1.8.3\/jquery.min.js":1,"0":1,"misc\/jquery-extend-3.4.0.js":1,"misc\/jquery-html-prefilter-3.5.0-backport.js":1,"misc\/jquery.once.js":1,"misc\/drupal.js":1,"\/\/ajax.googleapis.com\/ajax\/libs\/jqueryui\/1.10.2\/jquery-ui.min.js":1,"1":1,"sites\/all\/modules\/jquery_update\/replace\/ui\/external\/jquery.cookie.js":1,"sites\/all\/modules\/jquery_update\/replace\/misc\/jquery.form.min.js":1,"misc\/ajax.js":1,"sites\/all\/modules\/jquery_update\/js\/jquery_update.js":1,"sites\/all\/modules\/contrib\/admin_menu\/admin_devel\/admin_devel.js":1,"sites\/all\/libraries\/colorbox\/jquery.colorbox-min.js":1,"sites\/all\/modules\/colorbox\/js\/colorbox.js":1,"sites\/all\/modules\/colorbox\/styles\/default\/colorbox_style.js":1,"misc\/progress.js":1,"sites\/all\/modules\/contrib\/ctools\/js\/modal.js":1,"sites\/all\/modules\/google_analytics\/googleanalytics.js":1,"https:\/\/www.imsglobal.org\/sites\/default\/files\/googleanalytics\/js?tkd65r":1,"2":1,"sites\/all\/libraries\/superfish\/jquery.hoverIntent.minified.js":1,"sites\/all\/libraries\/superfish\/sftouchscreen.js":1,"sites\/all\/libraries\/superfish\/supposition.js":1,"sites\/all\/libraries\/superfish\/superfish.js":1,"sites\/all\/modules\/superfish\/superfish.js":1,"sites\/all\/themes\/ims\/assets\/js\/script.js":1,"sites\/all\/themes\/ims\/assets\/js\/bootstrap.min.js":1},"css":{"modules\/system\/system.base.css":1,"modules\/system\/system.menus.css":1,"modules\/system\/system.messages.css":1,"modules\/system\/system.theme.css":1,"misc\/ui\/jquery.ui.core.css":1,"misc\/ui\/jquery.ui.theme.css":1,"modules\/book\/book.css":1,"sites\/all\/modules\/calendar\/css\/calendar_multiday.css":1,"modules\/comment\/comment.css":1,"sites\/all\/modules\/contrib\/date\/date_repeat_field\/date_repeat_field.css":1,"modules\/field\/theme\/field.css":1,"modules\/node\/node.css":1,"sites\/all\/modules\/pd_reports_module\/css\/global.css":1,"sites\/all\/modules\/pd_reports_module\/css\/plugins\/datepicker\/daterangepicker.css":1,"modules\/poll\/poll.css":1,"modules\/search\/search.css":1,"sites\/all\/modules\/toc_node\/css\/toc_node.css":1,"sites\/all\/modules\/ubercart\/uc_order\/uc_order.css":1,"sites\/all\/modules\/ubercart\/uc_product\/uc_product.css":1,"sites\/all\/modules\/ubercart\/uc_store\/uc_store.css":1,"modules\/user\/user.css":1,"modules\/forum\/forum.css":1,"sites\/all\/modules\/views\/css\/views.css":1,"sites\/all\/modules\/contrib\/media\/modules\/media_wysiwyg\/css\/media_wysiwyg.base.css":1,"sites\/all\/modules\/colorbox\/styles\/default\/colorbox_style.css":1,"sites\/all\/modules\/contrib\/ctools\/css\/ctools.css":1,"sites\/all\/modules\/contrib\/ctools\/css\/modal.css":1,"sites\/all\/modules\/tagclouds\/tagclouds.css":1,"sites\/all\/modules\/user_dashboard\/user_dashboard.css":1,"sites\/all\/modules\/taxonomy_access\/taxonomy_access.css":1,"sites\/all\/modules\/productdirectory\/css\/tooltip.css":1,"\/\/use.fontawesome.com\/releases\/v5.5.0\/css\/all.css":1,"sites\/all\/libraries\/superfish\/css\/superfish.css":1,"sites\/all\/themes\/ims\/assets\/css\/megamenu-demo.css":1,"sites\/all\/themes\/ims\/assets\/css\/bootstrap-theme.css":1,"sites\/all\/themes\/ims\/assets\/css\/bootstrap.css":1,"sites\/all\/themes\/ims\/assets\/css\/imsglobal.css":1,"sites\/all\/themes\/ims\/assets\/css\/style.css":1,"sites\/all\/themes\/ims\/assets\/css\/imsglobal.print.css":1,"cpn_node_52186":1,"public:\/\/cpn\/block-606.css":1}},"colorbox":{"opacity":"0.85","current":"{current} of {total}","previous":"\u00ab Prev","next":"Next \u00bb","close":"Close","maxWidth":"98%","maxHeight":"98%","fixed":true,"mobiledetect":true,"mobiledevicewidth":"480px","file_public_path":"\/sites\/default\/files","specificPagesDefaultValue":"admin*\nimagebrowser*\nimg_assist*\nimce*\nnode\/add\/*\nnode\/*\/edit\nprint\/*\nprintpdf\/*\nsystem\/ajax\nsystem\/ajax\/*"},"CToolsModal":{"loadingText":"Loading...","closeText":"Close Window","closeImage":"\u003Cimg typeof=\u0022foaf:Image\u0022 src=\u0022https:\/\/www.imsglobal.org\/sites\/all\/modules\/contrib\/ctools\/images\/icon-close-window.png\u0022 alt=\u0022Close window\u0022 title=\u0022Close window\u0022 \/\u003E","throbber":"\u003Cimg typeof=\u0022foaf:Image\u0022 src=\u0022https:\/\/www.imsglobal.org\/sites\/all\/modules\/contrib\/ctools\/images\/throbber.gif\u0022 alt=\u0022Loading\u0022 title=\u0022Loading...\u0022 \/\u003E"},"variable_compare_against_baseline":"IMS has defined an ideal minimum conformance certification that different types of tools should meet. This filter will allow you to view whether a specific tool meets that baseline.","Affiliate":"Affiliate Member","CCLTI":"Learning Tools and Content Alliance Member","CM":"Contributing Member","IWB":"IWB Member","LIS":"EduERP Alliance Member","Assessment":"eAssessment Alliance Member","Prospect":"Prospect Member","better_exposed_filters":{"views":{"sidebar_content":{"displays":{"block_1":{"filters":[]},"block":{"filters":[]}}}}},"googleanalytics":{"account":["G-WL2WTVSYLS"],"trackOutbound":1,"trackMailto":1,"trackDownload":1,"trackDownloadExtensions":"7z|aac|arc|arj|asf|asx|avi|bin|csv|doc(x|m)?|dot(x|m)?|exe|flv|gif|gz|gzip|hqx|jar|jpe?g|js|mp(2|3|4|e?g)|mov(ie)?|msi|msp|pdf|phps|png|ppt(x|m)?|pot(x|m)?|pps(x|m)?|ppam|sld(x|m)?|thmx|qtm?|ra(m|r)?|sea|sit|tar|tgz|torrent|txt|wav|wma|wmv|wpd|xls(x|m|b)?|xlt(x|m)|xlam|xml|z|zip","trackColorbox":1,"trackDomainMode":1,"trackUrlFragments":1},"superfish":[{"id":"2","sf":{"animation":{"opacity":"show","height":"show"},"speed":"\u0027fast\u0027","autoArrows":true,"dropShadows":true,"disableHI":false},"plugins":{"touchscreen":{"mode":"window_width"},"supposition":true,"bgiframe":false}},{"id":"1","sf":{"animation":{"opacity":"show","height":"show"},"speed":"\u0027fast\u0027","autoArrows":true,"dropShadows":true,"disableHI":false},"plugins":{"touchscreen":{"mode":"window_width"},"supposition":true,"bgiframe":false}}]});
+//--><!]]>
+</script>
+<link href='//fonts.googleapis.com/css?family=Roboto:400,900italic,900,700italic,700,500italic,500,400italic,300italic,300,100italic,100' rel='stylesheet' type='text/css'>
+<link href='//fonts.googleapis.com/css?family=Roboto+Condensed:400,700italic,700,400italic,300italic,300' rel='stylesheet' type='text/css'>
+<meta name="google-site-verification" content="h393ALXEzZ95pCyEoEpklerEQiORSJjS1v7qMyCVTBo" />
+</head>
+
+<body class="html not-front not-logged-in no-sidebars page-node page-node- page-node-52186 node-type-page" >
+<head>
+<!--/ You can use the head in here if you want to, but we will use the html.tpl.php for it when we get there -->
+</head>
+<!--/Begin - Contact Info / Social Icons -->
+<div class="sharebar-holder">
+          <div class="region region-sharebar">
+    <div id="block-block-81" class="block block-block ">
+        <div class="block-content-container"><div class="block-content"> <div style="display: none;">Sharebar?</div> </div></div>
+</div>
+
+  </div>
+    </div>
+<div class="header-top">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="welcome-msg"></div>
+      </div>
+      <div class="col-md-8">
+        <div class="top-right-menu">
+                              <div class="region region-top-nav">
+    <div id="block-superfish-2" class="block block-superfish ">
+        <div class="block-content-container"><div class="block-content"> <ul id="superfish-2" class="menu sf-menu sf-user-menu sf-horizontal sf-style-none sf-total-items-6 sf-parent-items-0 sf-single-items-6"><li id="menu-4386-2" class="first odd sf-item-1 sf-depth-1 sf-no-children"><a href="https://www.1edtech.org/about/membership" title="" class="sf-depth-1">Membership</a></li><li id="menu-4871-2" class="middle even sf-item-2 sf-depth-1 sf-no-children"><a href="/events" class="sf-depth-1">Events</a></li><li id="menu-35991-2" class="middle odd sf-item-3 sf-depth-1 sf-no-children"><a href="https://www.imsglobal.org/news.html" title="" class="sf-depth-1">News</a></li><li id="menu-4956-2" class="middle even sf-item-4 sf-depth-1 sf-no-children"><a href="/1edtech-global" class="sf-depth-1">Global</a></li><li id="menu-21226-2" class="middle odd sf-item-5 sf-depth-1 sf-no-children"><a href="https://www.imsglobal.org/specifications.html" title="" class="sf-depth-1">Specifications</a></li><li id="menu-8461-2" class="last even sf-item-6 sf-depth-1 sf-no-children"><a href="/user/login?destination=node/52186" title="" class="sf-depth-1">Login</a></li></ul> </div></div>
+</div>
+
+  </div>
+                      </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--/End - Contact Info / Social Icons -->
+
+<!--/Begin LOGO AND SUCH -->
+<div class="logo-menu-bar">
+<div class="container">
+  <div class="row">
+    <div class="col-md-4">
+                      <a href="/" title="Home" rel="home" id="logo"> <img src="/sites/all/themes/ims/assets/img/1edtech_logo_white.png" alt="Home" /> </a>
+                                    </div>
+    <div class="col-md-8">
+              <div class="region region-menu-nav">
+    <div id="block-superfish-1" class="block block-superfish ">
+        <div class="block-content-container"><div class="block-content"> <ul id="superfish-1" class="menu sf-menu sf-main-menu sf-horizontal sf-style-none sf-total-items-6 sf-parent-items-5 sf-single-items-1"><li id="menu-4321-1" class="first odd sf-item-1 sf-depth-1 sf-total-children-9 sf-parent-children-0 sf-single-children-9 menuparent"><a href="/institutions.html" title="" class="sf-depth-1 menuparent">Workstreams</a><ul><li id="menu-39661-1" class="first odd sf-item-1 sf-depth-2 sf-no-children"><a href="https://www.1edtech.org/workstream/vetting" title="" class="sf-depth-2">TrustEd Apps Vetting</a></li><li id="menu-6841-1" class="middle even sf-item-2 sf-depth-2 sf-no-children"><a href="https://www.1edtech.org/workstream/ecosystem" title="" class="sf-depth-2">Learning Platforms, Apps, and Tools</a></li><li id="menu-6846-1" class="middle odd sf-item-3 sf-depth-2 sf-no-children"><a href="https://www.1edtech.org/workstream/curriculum" title="" class="sf-depth-2">Curriculum Innovation and Teaching Strategies</a></li><li id="menu-6831-1" class="middle even sf-item-4 sf-depth-2 sf-no-children"><a href="https://www.1edtech.org/workstream/assessment" title="" class="sf-depth-2">Integrated Assessment</a></li><li id="menu-6836-1" class="middle odd sf-item-5 sf-depth-2 sf-no-children"><a href="https://www.1edtech.org/workstream/credentials" title="" class="sf-depth-2">Digital Credentials</a></li><li id="menu-6781-1" class="middle even sf-item-6 sf-depth-2 sf-no-children"><a href="https://www.1edtech.org/workstream/analytics" title="" class="sf-depth-2">Learning Data and Analytics</a></li><li id="menu-15316-1" class="middle odd sf-item-7 sf-depth-2 sf-no-children"><a href="/COEK12Playbook.html" title="" class="sf-depth-2">K-12 Digital Transformation</a></li><li id="menu-39246-1" class="middle even sf-item-8 sf-depth-2 sf-no-children"><a href="https://www.imsglobal.org/coe" title="" class="sf-depth-2">Centers of Excellence</a></li><li id="menu-39536-1" class="last odd sf-item-9 sf-depth-2 sf-no-children"><a href="https://www.1edtech.org/program/trustedapps" title="" class="sf-depth-2">TrustEd Apps Program</a></li></ul></li><li id="menu-4311-1" class="middle even sf-item-2 sf-depth-1 sf-total-children-15 sf-parent-children-0 sf-single-children-15 menuparent"><a href="/developers" title="" class="sf-depth-1 menuparent">Standards</a><ul><li id="menu-39201-1" class="first odd sf-item-1 sf-depth-2 sf-no-children"><a href="https://www.imsglobal.org/development-resources" title="" class="sf-depth-2">Development Resources and Tools</a></li><li id="menu-14141-1" class="middle even sf-item-2 sf-depth-2 sf-no-children"><a href="/activity/accessibility" title="" class="sf-depth-2">Accessibility</a></li><li id="menu-14191-1" class="middle odd sf-item-3 sf-depth-2 sf-no-children"><a href="/activity/qtiapip" title="" class="sf-depth-2">Assessment</a></li><li id="menu-14146-1" class="middle even sf-item-4 sf-depth-2 sf-no-children"><a href="/activity/caliper" title="" class="sf-depth-2">Caliper Analytics</a></li><li id="menu-14151-1" class="middle odd sf-item-5 sf-depth-2 sf-no-children"><a href="/activity/common-cartridge" title="" class="sf-depth-2">Common Cartridge</a></li><li id="menu-39546-1" class="middle even sf-item-6 sf-depth-2 sf-no-children"><a href="https://www.imsglobal.org/compatibilitycheck" title="" class="sf-depth-2">Compatibility Check</a></li><li id="menu-24441-1" class="middle odd sf-item-7 sf-depth-2 sf-no-children"><a href="/activity/case" title="" class="sf-depth-2">Competencies &amp; Academic Standards Exchange</a></li><li id="menu-34736-1" class="middle even sf-item-8 sf-depth-2 sf-no-children"><a href="https://www.imsglobal.org/activity/comprehensive-learner-record" title="" class="sf-depth-2">Comprehensive Learner Record</a></li><li id="menu-14161-1" class="middle odd sf-item-9 sf-depth-2 sf-no-children"><a href="/activity/openbadges" title="" class="sf-depth-2">Open Badges</a></li><li id="menu-14171-1" class="middle even sf-item-10 sf-depth-2 sf-no-children"><a href="/activity/learning-tools-interoperability-lti%C2%AE" title="" class="sf-depth-2">Learning Tools Interoperability &amp; LTI Advantage</a></li><li id="menu-37881-1" class="middle odd sf-item-11 sf-depth-2 sf-no-children"><a href="https://www.imsglobal.org/activity/lti-resource-search" title="" class="sf-depth-2">LTI Resource Search</a></li><li id="menu-14176-1" class="middle even sf-item-12 sf-depth-2 sf-no-children"><a href="/activity/onerosterlis" title="" class="sf-depth-2">OneRoster / Learning Information Services / Edu-API</a></li><li id="menu-14181-1" class="middle odd sf-item-13 sf-depth-2 sf-no-children"><a href="/activity/openvideo" title="" class="sf-depth-2">OpenVideo</a></li><li id="menu-35726-1" class="middle even sf-item-14 sf-depth-2 sf-no-children"><a href="https://www.imsglobal.org/ims-security-framework" title="" class="sf-depth-2">Security Framework</a></li><li id="menu-34891-1" class="last odd sf-item-15 sf-depth-2 sf-no-children"><a href="https://www.imsglobal.org/activity/app-vetting" title="" class="sf-depth-2">Data Privacy</a></li></ul></li><li id="menu-4306-1" class="middle odd sf-item-3 sf-depth-1 sf-total-children-3 sf-parent-children-0 sf-single-children-3 menuparent"><a href="https://site.imsglobal.org/certifications" title="" class="sf-depth-1 menuparent">Certified Products</a><ul><li id="menu-24371-1" class="first odd sf-item-1 sf-depth-2 sf-no-children"><a href="https://site.imsglobal.org/certifications" title="" class="sf-depth-2">Product Directory</a></li><li id="menu-24376-1" class="middle even sf-item-2 sf-depth-2 sf-no-children"><a href="/buy-1edtech-certified" class="sf-depth-2">Buy IMS Certified</a></li><li id="menu-24381-1" class="last odd sf-item-3 sf-depth-2 sf-no-children"><a href="/certifications/get-certified" class="sf-depth-2">Get IMS Certified</a></li></ul></li><li id="menu-7411-1" class="middle even sf-item-4 sf-depth-1 sf-total-children-5 sf-parent-children-0 sf-single-children-5 menuparent"><a href="/learningimpact/li.html" class="sf-depth-1 menuparent">Learning Impact</a><ul><li id="menu-39241-1" class="first odd sf-item-1 sf-depth-2 sf-no-children"><a href="https://www.imsglobal.org/li/2020/ondemand" title="" class="sf-depth-2">Learning Impact On-Demand Webinars</a></li><li id="menu-39741-1" class="middle even sf-item-2 sf-depth-2 sf-no-children"><a href="https://www.1edtech.org/event/li/2023" title="" class="sf-depth-2">Learning Impact 2023 Conference</a></li><li id="menu-4946-1" class="middle odd sf-item-3 sf-depth-2 sf-no-children"><a href="/awards.html" title="" class="sf-depth-2">Learning Impact Awards</a></li><li id="menu-39586-1" class="middle even sf-item-4 sf-depth-2 sf-no-children"><a href="http://www.1edtech.org/program/lia/report/2022" title="" class="sf-depth-2">Learning Impact Report</a></li><li id="menu-3921-1" class="last odd sf-item-5 sf-depth-2 sf-no-children"><a href="https://www.1edtech.org/blog" title="" class="sf-depth-2">Learning Impact Blog</a></li></ul></li><li id="menu-14211-1" class="middle odd sf-item-5 sf-depth-1 sf-total-children-8 sf-parent-children-0 sf-single-children-8 menuparent"><a href="/leadershipactivities" title="" class="sf-depth-1 menuparent">Leadership</a><ul><li id="menu-14216-1" class="first odd sf-item-1 sf-depth-2 sf-no-children"><a href="/leadership/board-directors" title="" class="sf-depth-2">Board of Directors</a></li><li id="menu-14241-1" class="middle even sf-item-2 sf-depth-2 sf-no-children"><a href="/leadership/hed-institutional-executive-board" title="" class="sf-depth-2">HED Institutional Leadership Board</a></li><li id="menu-14226-1" class="middle odd sf-item-3 sf-depth-2 sf-no-children"><a href="/leadership/k12institutional-executive-board" title="" class="sf-depth-2">K-12 Advisory Council</a></li><li id="menu-14236-1" class="middle even sf-item-4 sf-depth-2 sf-no-children"><a href="/leadership/technical-advisory-board-tab" title="" class="sf-depth-2">Technical Advisory Board</a></li><li id="menu-14221-1" class="middle odd sf-item-5 sf-depth-2 sf-no-children"><a href="/leadership/europeboard" title="" class="sf-depth-2">1EdTech Europe Board Members</a></li><li id="menu-19031-1" class="middle even sf-item-6 sf-depth-2 sf-no-children"><a href="/membersandaffiliates.html" title="" class="sf-depth-2">1EdTech Members</a></li><li id="menu-37886-1" class="middle odd sf-item-7 sf-depth-2 sf-no-children"><a href="/collaborations.html" class="sf-depth-2">Collaborations and Affiliations</a></li><li id="menu-14246-1" class="last even sf-item-8 sf-depth-2 sf-no-children"><a href="/imsstaff.html" title="" class="sf-depth-2">1EdTech Staff</a></li></ul></li><li id="menu-4471-1" class="last even sf-item-6 sf-depth-1 sf-no-children"><a href="/search/site/" title="" class="sf-depth-1">Search</a></li></ul> </div></div>
+</div>
+
+  </div>
+          </div>
+  </div>
+</div>
+</div>
+<!-- /Close Logo and regions -->
+
+<!--/Begin Banner Region -->
+<div class="banner-hero">
+<div class="row">
+  <div class="col-md-12">
+    <div class="slider-adjust">
+          </div>
+  </div>
+</div>
+</div>
+<!--/End Banner Region -->
+
+<!--/Begin Call To Action -->
+      </div>
+    </div>
+  </div>
+</div>
+<!--/End Call To Action -->
+
+<!--/Begin Top Columns  -->
+
+    </div>
+  </div>
+</div>
+<!--/End Top Columns-->
+
+<!--/Begin Header Title Section -->
+      </div>
+    </div>
+  </div>
+</div>
+<!--/End Header Title Section -->
+
+
+
+<!--/Begin Content and Side Bar -->
+<div class="main-section">
+<div class="container">
+  <div class="row">
+          <a id="main-content"></a>             <h1 class="title hide" id="page-title">
+				1EdTech Learning Tools Interoperability™ Basic LTIv1 Implementation Guide	</h1>
+                        <div class="clearfix"></div>
+            <div class="tabs">  </div>
+          
+    <!--/Content -->
+          <div class="col-md-12">
+    
+    
+                    <div class="region region-content">
+    <div id="block-block-606" class="block block-block ">
+        <div class="block-content-container"><div class="block-content"> <div class="alert alert-warning" role="alert">
+	<p>IMS recommends implementing and procuring products that conform to the latest version of <a class="alert-link" href="/activity/learning-tools-interoperability"> LTI v1.3</a> and the <a class="alert-link" href="/lti-advantage-overview">LTI Advantage</a> extensions.</p>
+	<p>LTI v1.0.1 (released 22 July 2019) is the latest version of the LTI v1.0 spec with the security updated published here: <a href="/spec/lti/v1p0p1">https://www.imsglobal.org/spec/lti/v1p0p1</a></p>
+	<p>&nbsp;</p>
+</div>
+<p>&nbsp;</p>
+ </div></div>
+</div>
+
+<div id="block-system-main" class="block block-system ">
+        <div class="block-content-container"><div class="block-content"> <div id="table-of-contents-links">
+    <a name="table-of-contents"></a>
+    <div class="item-list"><ul class="toc-node-bullets"><li class="toc-node-level-1 first"><a href="/specs/ltiv1p0/implementation-guide#toc-1"><span class="toc-text">1.1            Structure of this Document</span></a></li>
+<li class="toc-node-level-1"><a href="/specs/ltiv1p0/implementation-guide#toc-2"><span class="toc-text">1.2            References</span></a></li>
+<li class="toc-node-level-1"><a href="/specs/ltiv1p0/implementation-guide#toc-3"><span class="toc-text">4.1       Basic LTI Credential Management</span></a></li>
+<li class="toc-node-level-1"><a href="/specs/ltiv1p0/implementation-guide#toc-4"><span class="toc-text">4.2       Basic LTI Message Signing</span></a></li>
+<li class="toc-node-level-1"><a href="/specs/ltiv1p0/implementation-guide#toc-5"><span class="toc-text">A.1    ContextType Vocabularies</span></a></li>
+<li class="toc-node-level-2"><a href="/specs/ltiv1p0/implementation-guide#toc-14"><span class="toc-text">A.1.1      LIS vocabulary for ContextType</span></a></li>
+<li class="toc-node-level-1"><a href="/specs/ltiv1p0/implementation-guide#toc-6"><span class="toc-text">A.2    Role Vocabularies</span></a></li>
+<li class="toc-node-level-2"><a href="/specs/ltiv1p0/implementation-guide#toc-15"><span class="toc-text">A.2.1      LIS vocabulary for System Role</span></a></li>
+<li class="toc-node-level-2"><a href="/specs/ltiv1p0/implementation-guide#toc-16"><span class="toc-text">A.2.2      LIS vocabulary for Institution Role</span></a></li>
+<li class="toc-node-level-2"><a href="/specs/ltiv1p0/implementation-guide#toc-17"><span class="toc-text">A.2.3      LIS vocabulary for Context Role</span></a></li>
+<li class="toc-node-level-1"><a href="/specs/ltiv1p0/implementation-guide#toc-7"><span class="toc-text">B.1    Authoring Links with Link-Level Credentials</span></a></li>
+<li class="toc-node-level-1"><a href="/specs/ltiv1p0/implementation-guide#toc-8"><span class="toc-text">B.2    Security Policy / SandBoxing Launch Requests</span></a></li>
+<li class="toc-node-level-1"><a href="/specs/ltiv1p0/implementation-guide#toc-9"><span class="toc-text">B.3    Roles</span></a></li>
+<li class="toc-node-level-1"><a href="/specs/ltiv1p0/implementation-guide#toc-10"><span class="toc-text">B.4    Non-Context LTI Launches</span></a></li>
+<li class="toc-node-level-1"><a href="/specs/ltiv1p0/implementation-guide#toc-11"><span class="toc-text">B.5    Basic LTI Sample Launch</span></a></li>
+<li class="toc-node-level-1"><a href="/specs/ltiv1p0/implementation-guide#toc-12"><span class="toc-text">B.6    Conformance</span></a></li>
+<li class="toc-node-level-1 last"><a href="/specs/ltiv1p0/implementation-guide#toc-13"><span class="toc-text">List of Contributors</span></a></li>
+</ul></div></div><div id="node-52186" class="node node-page node-full clearfix" about="/specs/ltiv1p0/implementation-guide" typeof="foaf:Document">
+
+  
+      <span property="dc:title" content="1EdTech Learning Tools Interoperability&trade; Basic LTIv1 Implementation Guide" class="rdf-meta element-hidden"></span><span property="sioc:num_replies" content="0" datatype="xsd:integer" class="rdf-meta element-hidden"></span>
+  
+  <div class="content">
+    <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even" property="content:encoded"><div class="statusFinal">1EdTech Final Release</div>
+<div>
+	<p><img src="/sites/default/files/images/imslogo.png"></p>
+	<p>1EdTech Learning Tools Interoperability&trade; Basic LTI Implementation Guide<br>
+		Version 1.0 Final</p>
+	<p>&nbsp;</p>
+	<p>Date Issued:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 17 May 2010<br>
+		Latest version:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="/lti/">http://www.imsglobal.org/lti/</a></p>
+	<p>&nbsp;</p>
+	<p><strong>IPR and Distribution Notices</strong></p>
+	<p>Recipients of this document are requested to submit, with their comments, notification of any relevant patent claims or other intellectual property rights of which they may be aware that might be infringed by any implementation of the specification set forth in this document, and to provide supporting documentation.</p>
+	<p>1EdTech takes no position regarding the validity or scope of any intellectual property or other rights that might be claimed to pertain to the implementation or use of the technology described in this document or the extent to which any license under such rights might or might not be available; neither does it represent that it has made any effort to identify any such rights. Information on 1EdTech&rsquo;s procedures with respect to rights in 1EdTech specifications can be found at the 1EdTech Intellectual Property Rights web page: <a href="/sites/default/files/ipr/imsipr_policyFinal.pdf">http://www.imsglobal.org/ipr/imsipr_policyFinal.pdf</a></p>
+	<p>Copyright &copy; 2010 1EdTech Consortium. All Rights Reserved.</p>
+	<p>Use of this specification to develop products or services is governed by the license with 1EdTech found on the 1EdTech website: <a href="/license.html">http://www.imsglobal.org/license.html</a></p>
+	<p>Permission is granted to all parties to use excerpts from this document as needed in producing requests for proposals.</p>
+	<p>The limited permissions granted above are perpetual and will not be revoked by 1EdTech or its successors or assigns.</p>
+	<p>THIS SPECIFICATION IS BEING OFFERED WITHOUT ANY WARRANTY WHATSOEVER, AND IN PARTICULAR, ANY WARRANTY OF NONINFRINGEMENT IS EXPRESSLY DISCLAIMED. ANY USE OF THIS SPECIFICATION SHALL BE MADE ENTIRELY AT THE IMPLEMENTER'S OWN RISK, AND NEITHER THE CONSORTIUM, NOR ANY OF ITS MEMBERS OR SUBMITTERS, SHALL HAVE ANY LIABILITY WHATSOEVER TO ANY IMPLEMENTER OR THIRD PARTY FOR ANY DAMAGES OF ANY NATURE WHATSOEVER, DIRECTLY OR INDIRECTLY, ARISING FROM THE USE OF THIS SPECIFICATION.</p>
+	<p>Join the discussion and post comments on the Basic LTI Public Forum: <a href="/forums/ims-glc-public-forums-and-resources/lti-basic-lti-v10-and-beyond"> http://www.imsglobal.org/community/forum/categories.cfm?catid=44</a></p>
+	<p>&nbsp;</p>
+	<p align="center"><strong>&copy; 2010 1EdTech Consortium, Inc.</strong><br><strong>All Rights Reserved.</strong></p>
+	<p align="center">The 1EdTech Logo and Learning Tools Interoperability (LTI) are trademarks of the 1EdTech Consortium, Inc. in the United States and/or other countries.<br>
+		Document Name: 1EdTech Learning Tools Interoperability Basic LTI Implementation Guide Final v1.0<br>
+		Revision: 17 May 2010</p>
+	<hr><br><h1>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Introduction</h1>
+	<p>1EdTech is developing Learning Tools Interoperability&trade; (LTI) to allow remote tools and content to be integrated into a Learning Management System (LMS).&nbsp; This document brings a subset of that specification forward for standardization.&nbsp;&nbsp; This document precedes the full 1EdTech LTI v1.0 specification set.</p>
+	<p>The 1EdTech LTI specification defines two styles of integration:</p>
+	<ul><li><em>Full</em> LTI entails a formal, negotiated deployment process whereby the Tool Consumer (typically an LMS) and the Tool Provider reach an agreement about (1) the run-time services that will be used to support tight integrations between the systems, (2) the security policies that will apply, and (3) the set of destinations within the Tool that can be launched from the Tool Consumer system.&nbsp;</li>
+		<li><em>Basic</em> LTI exposes a single destination in the Tool Provider system. The procedure for establishing a link to this single destination is simple, but limited. There is no provision for accessing Full LTI run-time services in the Tool Consumer and only one security policy is supported.</li>
+	</ul><p>This document also describes how Basic LTI destinations are described in an 1EdTech Common Cartridge and how they are handled on the import and export of an 1EdTech Common Cartridge.</p>
+	<p align="center"><img alt="Figure 1.1: Overview of Basic LTI." height="307" src="/sites/default/files/lti/blti/bltiv1p0/images/ltiBLTIimgv1p0image002.jpg" width="531"></p>
+	<p align="center"><strong>Figure 1.1</strong>: Overview of Basic LTI.</p>
+	<p>Throughout this document, we use specific terminology to describe the two main pieces of software involved in LTI.&nbsp;&nbsp; What we traditionally think of as the "Learning Management System" (LMS) is referred to as the "Tool Consumer" (TC) as it "consumes" the tool.&nbsp; The external tool or content is called the "Tool Provider" (TP) as it "provides" the tool for use in the Tool Consumer.&nbsp;&nbsp; Example Tool Providers might include an externally hosted testing system or a server that contains externally hosted premium content.&nbsp;</p>
+	<p>Basic LTI uses the OAuth protocol (<a href="http://www.oauth.net">http://www.oauth.net</a>) to secure its message interactions between the TC and TP.&nbsp; OAuth requires a key and shared secret to sign messages.&nbsp; The key is transmitted with each message, as well as an OAuth-generated signature based on the key.&nbsp; The TP looks up the secret based on the provided key and re-computes the signature and compares the recomputed signature with the transmitted signature to verify the sender's credentials.&nbsp;</p>
+	<p>As a best practice, the TP should isolate data based on the key. The TP must decide exactly how the key is used to isolate data. For example, the TP might maintain a table which maps multiple keys into a single data silo. Or, the TP might arrange to use the same key repeatedly in all cases where data are to belong to the same data silo.</p>
+	<p>The TC can make choices as to how it manages credentials (keys and secrets) within its system. Basic LTI has three patterns for the credentials: (1) the TC-wide credential for a particular TP domain which is set by the TC administrator and used for all launches to a particular TP domain, or (2) the TC-wide credential for a particular TP URL which is set by the TC administrator and used for all launches to a particular TP URL, or (3) each Basic LTI link is protected by its own credential.&nbsp; The first and second patterns allow for a more seamless integration between a TC-instance and TP-instance from an instructor&rsquo;s perspective. The third pattern allows instructors to "mash up" Basic LTI links.</p>
+	<p>Basic LTI has optional support for the TP to call 1EdTech Learning Information Services (LIS) when those services can be made available to the TP.&nbsp; Basic LTI does not require LIS services, but the TC can send LIS key information to the TP using values in the Basic LTI Launch Request.</p>
+	<p>This document uses the term "context" where you might expect to see "course".&nbsp; A context is roughly equivalent to a course, project, or other collection of resources with a common set of users and roles.&nbsp; The word "context" is used instead of "course" because a course is only one kind of context (another type of context would be "group").</p>
+	<p>&nbsp;</p>
+	<div class="toc-item-anchor"><a name="toc-1"></a></div><h2 class=" toc-headings">1.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Structure of this Document</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<p>The structure of this document is:</p>
+	<table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td style="width:240px;">
+					<p style="margin-left:.25in;">2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Use Cases for Basic LTI</p>
+				</td>
+				<td style="width:391px;">
+					<p>A listing of the use cases describing the core usage scenarios of the Basic LTI specification;</p>
+				</td>
+			</tr><tr><td style="width:240px;">
+					<p style="margin-left:.25in;">3.&nbsp;&nbsp;&nbsp;&nbsp; Basic LTI&nbsp; Launch Data</p>
+				</td>
+				<td style="width:391px;">
+					<p>A description of the data items that are passed as part of the POST data when a Basic LTI launch is performed;</p>
+				</td>
+			</tr><tr><td style="width:240px;">
+					<p style="margin-left:.25in;">4.&nbsp;&nbsp;&nbsp;&nbsp; Basic LTI Security Model</p>
+				</td>
+				<td style="width:391px;">
+					<p>The definition of the security environment for Basic LTI launches;</p>
+				</td>
+			</tr><tr><td style="width:240px;">
+					<p style="margin-left:.25in;">5.&nbsp;&nbsp;&nbsp;&nbsp; Representing Basic LTI Links in a Cartridge</p>
+				</td>
+				<td style="width:391px;">
+					<p>A description of the Basic LTI link for inclusion in an 1EdTech Common Cartridge;</p>
+				</td>
+			</tr><tr><td style="width:240px;">
+					<p style="margin-left:.25in;">6.&nbsp;&nbsp;&nbsp;&nbsp; Using Learning Information Services with Basic LTI</p>
+				</td>
+				<td style="width:391px;">
+					<p>A description of how to use Basic LTI with 1EdTech Learning Information Services;</p>
+				</td>
+			</tr><tr><td style="width:240px;">
+					<p style="margin-left:.25in;">Appendix A LTI Standard Vocabularies</p>
+				</td>
+				<td style="width:391px;">
+					<p>A reference to the LTI specification&rsquo;s standard vocabularies;<br>
+						&nbsp;</p>
+				</td>
+			</tr><tr><td style="width:240px;">
+					<p style="margin-left:.25in;">Appendix B Implementation Practice</p>
+				</td>
+				<td style="width:391px;">
+					<p>A non-normative discussion and recommendations to help guide implementations.</p>
+					<p>&nbsp;</p>
+				</td>
+			</tr></tbody></table><div class="toc-item-anchor"><a name="toc-2"></a></div><h2 class=" toc-headings">1.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; References</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<p>As a subset of the LTI v1.0 specification, this document refers to other LTI documents that are not yet published publically, as they are in draft state at the time of the completion of the Basic LTI specification. These LTI documents are listed here but will not be available publically until they also reach completed status.</p>
+	<p style="margin-left:1.25in;">[CC, 08a]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>1EdTech Common Cartridge v1.0</em>, <u>1EdTech Consortium</u>, K.Riley, October 2008. <a href="/cc/index.html">http://www.imsglobal.org/cc/index.html</a>.</p>
+	<p style="margin-left:1.25in;">[LIS, 10a]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>1EdTech Learning Information Services Overview v2.0 Public Draft</em>, L.Feng, W.Lee and C.Smythe, <u>1EdTech Consortium</u>, March 2010. <a href="/lis/index.html">http://www.imsglobal.org/lis/index.html</a>.</p>
+	<p style="margin-left:1.25in;">[LTI, 10 CCI]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>1EdTech Learning Tools Interoperability Common Cartridge Interaction v1.0</em>, G.McFall, M.McKell, L.Neumann, 1EdTech Consortium, 2010. <a href="/lti/index.html">http://www.imsglobal.org/lti/index.html</a>.</p>
+	<p style="margin-left:1.25in;">&nbsp;[LTI, 10 MSS]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>1EdTech Learning Tools Interoperability Messages v1.0</em>, G.McFall, M.McKell, L.Neumann, 1EdTech Consortium, 2010. <a href="/lti/index.html">http://www.imsglobal.org/lti/index.html</a>.</p>
+	<p style="margin-left:1.25in;">&nbsp;[LTI, 10 TMT]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>1EdTech Learning Tools Interoperability Tool Management v1.0</em>, G.McFall, M.McKell, L.Neumann, 1EdTech Consortium, 2010. <a href="/lti/index.html">http://www.imsglobal.org/lti/index.html</a>.</p>
+	<p style="margin-left:1.25in;">&nbsp;</p>
+	<h1>2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Use Cases for Basic LTI</h1>
+	<p><em>This section is taken verbatim from the</em> LTI Tool Management [LTI, 10, TMT] <em>documentation</em>.</p>
+	<p>&nbsp;</p>
+	<table border="1" cellpadding="0" cellspacing="0"><tbody><tr><td style="width:140px;">
+					<p><strong>Title:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p><strong>Setting TP Domain Credentials (Basic LTI)</strong></p>
+				</td>
+			</tr><tr><td style="width:140px;">
+					<p>Use Case Local ID:</p>
+				</td>
+				<td style="width:492px;">
+					<p>LTIv1-12</p>
+				</td>
+			</tr><tr><td style="width:140px;">
+					<p><strong>Description:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p>The TC administrator configures TP domain credentials for a particular TP.</p>
+				</td>
+			</tr><tr><td style="width:140px;">
+					<p><strong>Actors:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<ul><li>TC Administrator</li>
+						<li>TP Administrator</li>
+					</ul></td>
+			</tr><tr><td style="width:140px;height:32px;">
+					<p><strong>Preconditions:</strong></p>
+				</td>
+				<td style="width:492px;height:32px;">
+					<p>None</p>
+				</td>
+			</tr><tr><td style="width:140px;">
+					<p><strong>Basic Flow of Events:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p style="margin-left:.25in;">1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The TP Administrator creates the key and secret combination for the TC (where the TC administrator may request a particular key, often the TC domain name).</p>
+					<p style="margin-left:.25in;">2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The TC Administrator obtains the key and secret from the TP administrator.</p>
+					<p style="margin-left:.25in;">3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The TC Administrator installs the key and secret and associates them with launches destined for the TP&rsquo;s domain using a TC-provided dialog or configuration mechanism.</p>
+				</td>
+			</tr><tr><td style="width:140px;">
+					<p><strong>Alternate Path</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p style="margin-left:.25in;">A.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In step 3, the key and secret combination may be designated to apply to a particular TP URL instead of all URLs destined for the TP&rsquo;s domain.</p>
+				</td>
+			</tr></tbody></table><p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<table border="1" cellpadding="0" cellspacing="0"><tbody><tr><td style="width:139px;">
+					<p><strong>Title:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p><strong>Setting Link Level Credentials (Basic LTI)</strong></p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p>Use Case Local ID:</p>
+				</td>
+				<td style="width:492px;">
+					<p>LTIv1-13</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Description:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p>An instructor authors a Basic LTI link and sets the key/password for that link.</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Actors:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<ul><li>Instructor</li>
+						<li>Tool Provider (TP)</li>
+					</ul></td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Preconditions:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p>None</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Basic Flow of Events:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p style="margin-left:.25in;">1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The Instructor contacts the TP and gains access to a provider tool or content.</p>
+					<p style="margin-left:.25in;">2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The TP provides the Instructor with (1) a Basic LTI launch URL or XML snippet for the content or tool, (2) a key used to access this content/tool, and (3) a secret associated with the key.</p>
+					<p style="margin-left:.25in;">3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The Instructor enters the three values (URL or XML snippet, Key, Secret) into a Basic LTI authoring dialog in the TC system.</p>
+				</td>
+			</tr></tbody></table><p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<table border="1" cellpadding="0" cellspacing="0"><tbody><tr><td style="width:139px;">
+					<p><strong>Title:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p><strong>Launching an Authored Basic LTI Link from a Context</strong></p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p>Use Case Local ID:</p>
+				</td>
+				<td style="width:492px;">
+					<p style="margin-left:4.0pt;">LTIv1-14</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Description:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p>A non-Instructor user selects a Basic LTI link from a context in the TC.</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Actors:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<ul><li>TC User</li>
+					</ul></td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Preconditions:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p>An Instructor has properly authored or imported a Basic LTI Link and there are appropriate credentials in place.</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Basic Flow of Events:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<ol><li>The TC User clicks on the link in the TC UI.</li>
+						<li>The tool or content from the TP appears in the TC UI.&nbsp; If JavaScript is turned off &ndash; the TC User will need to click on a "continue" button to send the POST data to the TP.</li>
+					</ol></td>
+			</tr></tbody></table><p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<table align="left" border="1" cellpadding="0" cellspacing="0"><tbody><tr><td style="width:139px;">
+					<p><strong>Title:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p><strong>Launching Basic LTI Imported from a Cartridge (with secret)</strong></p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p>Use Case Local ID:</p>
+				</td>
+				<td style="width:492px;">
+					<p>LTIv1-15</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Description:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p>An Instructor imports a Common Cartridge containing Basic LTI link descriptors into their context and users use the content.</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Actors:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<ul><li>Cartridge Creator</li>
+						<li>Instructor</li>
+						<li>TC User</li>
+					</ul></td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Preconditions:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p>The TC Administrator has received and installed the appropriate credentials for the particular TP(s) that are referenced in the cartridge.</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Basic Flow of Events:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p style="margin-left:.25in;">1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The Cartridge Creator authors a cartridge and includes one or more Basic LTI link descriptors in the cartridge. The Basic LTI link descriptors in the cartridge contain a launch URL(s) and other data but do not contain keys or secrets.</p>
+					<p style="margin-left:.25in;">2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The Instructor obtains the Common Cartridge and imports it into their context in the TC system.</p>
+					<p style="margin-left:.25in;">3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; When a TC User launches the Basic LTI link imported from the Common Cartridge, the TC uses the pre-configured credentials associated with the TP domain or URLs.</p>
+					<p style="margin-left:.25in;">4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In particular, as long as the TC-wide credentials are already installed, the Instructor does not need to take any further action to launch the content beyond importing a cartridge.</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Alternate Path</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p style="margin-left:.25in;">A.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; If the preconditions are not satisfied, it is also possible to set the credentials after the cartridge import has taken place. If a launch occurs before credentials have been defined, it is the responsibility of the TP to notify the user that credentials are required.</p>
+				</td>
+			</tr></tbody></table><p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<table align="left" border="1" cellpadding="0" cellspacing="0"><tbody><tr><td style="width:139px;">
+					<p><strong>Title:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p><strong>Launching Basic LTI Imported from a Cartridge (no secret)</strong></p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p>Use Case Local ID:</p>
+				</td>
+				<td style="width:492px;">
+					<p>LTIv1-16</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Description:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p>An Instructor imports a Common Cartridge containing Basic LTI link descriptors into their context and users use the content.&nbsp; Note that this scenario is optional &ndash; the TC and/or TP may decide that Basic LTI launches without secrets are treated as an error.</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Actors:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<ul><li>Cartridge Creator</li>
+						<li>Instructor</li>
+						<li>TC User</li>
+					</ul></td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Preconditions:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p>None.</p>
+				</td>
+			</tr><tr><td style="width:139px;">
+					<p><strong>Basic Flow of Events:</strong></p>
+				</td>
+				<td style="width:492px;">
+					<p style="margin-left:.25in;">1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The Cartridge Creator authors a cartridge and includes one or more Basic LTI link descriptors in the cartridge. The Basic LTI link descriptors in the cartridge contain a launch URL(s) and other data but do not contain keys or secrets.</p>
+					<p style="margin-left:.25in;">2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The Instructor obtains the Common Cartridge and imports it into their context in the TC system.</p>
+					<p style="margin-left:.25in;">3.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; When a TC User launches the Basic LTI link from the Common Cartridge, the TC launches the Basic LTI link with no authentication or signature information.</p>
+				</td>
+			</tr></tbody></table><p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<h1>3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Basic LTI Launch Data</h1>
+	<p>This section describes the data items that are passed as part of the POST data when a Basic LTI launch is performed.&nbsp; Very few of the fields are technically required as each Tool Provider may have different requirements.&nbsp; Some TPs may see the fields in the launch as information to be gathered for tracking and others may need highly detailed and precise information to perform high-stakes activities and reliably and securely return high-stakes results from those activities.</p>
+	<p>TC systems should provide as much data as possible in each launch to maximize the chance that the TP will have the data it needs to function properly.&nbsp;&nbsp; TC systems may have sandboxing features that limit the sending of certain Basic LTI data elements only to "approved" TPs.&nbsp; It is outside the scope of the document to define the nature of the TC sandboxing of Basic LTI launches.&nbsp; TPs should be prepared to work with partial information &ndash; either because the TC does not have the information or the TC has been configured not to share the information with the TP.</p>
+	<p>If a profile wants to extend these fields, they should prefix all fields not described herein with "ext_".</p>
+	<p><em>The normative text in this section was taken from the</em> LTI Messages [LTI, 10 MSS]<em>documentation.<br>
+		&nbsp;</em></p>
+	<p><strong>lti_message_type=basic-lti-launch-request</strong><br>
+		This indicates that this is a Basic LTI Launch Message.&nbsp; This allows a TP to accept a number of different LTI message types at the same launch URL.&nbsp; This parameter is required.<br>
+		&nbsp;</p>
+	<p><strong>lti_version=LTI-1p0</strong><br>
+		This indicates which version of the specification is being used for this particular message.&nbsp; This parameter is required.<br>
+		&nbsp;</p>
+	<p><strong>resource_link_id=88391-e1919-bb3456</strong><br>
+		This is an opaque unique identifier that the TC guarantees will be unique within the TC for every placement of the link.&nbsp;&nbsp; If the tool / activity is placed multiple times in the same context, each of those placements will be distinct. This value will also change if the item is exported from one system or context and imported into another system or context.&nbsp; This parameter is required.<br>
+		&nbsp;</p>
+	<p><strong>resource_link_title=My Weekly Wiki</strong><br>
+		A title for the resource. This is the clickable text that appears in the link. This parameter is recommended.<br>
+		&nbsp;</p>
+	<p><strong>resource_link_description=&hellip;</strong><br>
+		A plain text description of the link&rsquo;s destination, suitable for display alongside the link. Typically no more than several lines long. This parameter is optional.<br>
+		&nbsp;</p>
+	<p><strong>user_id=0ae836b9-7fc9-4060-006f-27b2066ac545</strong><br>
+		Uniquely identifies the user.&nbsp; This should not contain any identifying information for the user.&nbsp; Best practice is that this field should be a TC-generated long-term &ldquo;primary key&rdquo; to the user record &ndash; not the &ldquo;logical key".&nbsp; This parameter is recommended.</p>
+	<p><strong>user_image=http://....</strong><br>
+		This attribute specifies the URI for an image of the user who launched this request.&nbsp; This image is suitable for use as a "profile picture" or an avatar representing the user.&nbsp; This parameter is optional.</p>
+	<p>&nbsp;</p>
+	<p><strong>roles=Instructor</strong><br>
+		A comma-separated list of URN values for roles.&nbsp; If this list is non-empty, it should contain at least one role from the LIS System Role, LIS Institution Role, or LIS Context Role vocabularies (See Appendix A).&nbsp; The assumed namespace of these URNs is the LIS vocabulary of LIS Context Roles so TCs can use the handles when the intent is to refer to an LIS context role.&nbsp; If the TC wants to include a role from another namespace, a fully-qualified URN should be used.&nbsp; Usage of roles from non-LIS vocabularies is discouraged as it may limit interoperability.&nbsp;&nbsp; This parameter is recommended.</p>
+	<p>&nbsp;</p>
+	<p><strong>lis_person_name_given=Jane<br>
+		lis_person_name_family=Public<br>
+		lis_person_name_full=Jane Q. Public<br>
+		lis_person_contact_email_primary=user@school.edu</strong><br>
+		These fields contain information about the user account that is performing this launch.&nbsp; The names of these data items are taken from LIS.&nbsp; The precise meaning of the content in these fields is defined by LIS. These parameters are recommended unless they are suppressed because of privacy settings.</p>
+	<p>&nbsp;</p>
+	<p><strong>context_id=8213060-006f-27b2066ac545</strong><br>
+		This is an opaque identifier that uniquely identifies the context that contains the link being launched. This parameter is recommended.<br>
+		&nbsp;</p>
+	<p><strong>context_type=CourseSection</strong><br>
+		This string is a comma-separated list of URN values that identify the type of context.&nbsp; At a minimum, the list MUST include a URN value drawn from the LIS vocabulary (see Appendix A). The assumed namespace of these URNs is the LIS vocabulary so TCs can use the handles when the intent is to refer to an LIS context type.&nbsp; If the TC wants to include a context type from another namespace, a fully-qualified URN should be used. This parameter is optional.<br>
+		&nbsp;</p>
+	<p><strong>context_title=Design of Personal Environments</strong><br>
+		A title of the context &ndash; it should be about the length of a line. This parameter is recommended.<br>
+		&nbsp;</p>
+	<p><strong>context_label=SI182</strong><br>
+		A label for the context &ndash; intended to fit in a column. This parameter is recommended.<br>
+		&nbsp;</p>
+	<p><strong>launch_presentation_locale=en-US</strong><br>
+		Language, country and variant as represented using the IETF Best Practices for Tags for Identifying Languages (BCP-47) available at http://www.rfc-editor.org/rfc/bcp/bcp47.txt<br>
+		&nbsp;</p>
+	<p><strong>launch_presentation_document_target=iframe</strong><br>
+		The value should be either &lsquo;frame&rsquo;, &lsquo;iframe&rsquo; or &lsquo;window&rsquo;.&nbsp; This field communicates the kind of browser window/frame where the TC has launched the tool. This parameter is recommended.</p>
+	<p>&nbsp;</p>
+	<p><strong>launch_presentation_width=320</strong><br>
+		The width of the window or frame where the content from the tool will be displayed. This parameter is recommended.</p>
+	<p>&nbsp;</p>
+	<p><strong>launch_presentation_height=240</strong><br>
+		The height of the window or frame where the content from the tool will be displayed. This parameter is recommended.</p>
+	<p>&nbsp;</p>
+	<p><strong>launch_presentation_return_url=http://lmsng.school.edu/portal/123/page/988/</strong><br>
+		Fully qualified URL where the TP can redirect the user back to the TC interface.&nbsp; This URL can be used once the TP is finished or if the TP cannot start or has some technical difficulty.&nbsp; In the case of an error, the TP may add a parameter called <strong>lti_errormsg</strong> that includes some detail as to the nature of the error.&nbsp; The <strong>lti_errormsg</strong> value should make sense if displayed to the user.&nbsp; If the tool has displayed a message to the end user and only wants to give the TC a message to log, use the parameter <strong>lti_errorlog</strong> instead of <strong>lti_errormsg.</strong> If the tool is terminating normally, and wants a message displayed to the user it can include a text message as the <strong>lti_msg</strong> parameter to the return URL. If the tool is terminating normally and wants to give the TC a message to log, use the parameter <strong>lti_log</strong>. This data should be sent on the URL as a GET &ndash; so the TP should take care to keep the overall length of the parameters small enough to fit within the limitations of a GET request. This parameter is recommended.<br>
+		&nbsp;</p>
+	<p><strong>tool_consumer_instance_guid=lmsng.school.edu</strong><br>
+		This is a unique identifier for the TC.&nbsp; A common practice is to use the DNS of the organization or the DNS of the TC instance.&nbsp; If the organization has multiple TC instances, then the best practice is to prefix the domain name with a locally unique identifier for the TC instance.&nbsp; This parameter is recommended.<br>
+		&nbsp;</p>
+	<p><strong>tool_consumer_instance_name=SchoolU</strong><br>
+		This is a user visible field &ndash; it should be about the length of a column. This parameter is recommended.<br>
+		&nbsp;</p>
+	<p><strong>tool_consumer_instance_description=University of School (LMSng)</strong><br>
+		This is a user visible field &ndash; it should be about the length of a line. This parameter is optional.<br>
+		&nbsp;</p>
+	<p><strong>tool_consumer_instance_url=http://lmsng.school.edu</strong><br>
+		This is the URL of the consumer instance.&nbsp; This parameter is optional.</p>
+	<p>&nbsp;</p>
+	<p><strong>tool_consumer_instance_contact_email=System.Admin@school.edu</strong><br>
+		An email contact for the TC instance. This parameter is recommended.</p>
+	<p>&nbsp;</p>
+	<p><strong>custom_<em>keyname</em>=value</strong><br>
+		The creator of a Basic LTI link can add custom key/value parameters to a launch which are to be included with the launch of the Basic LTI link. The Common Cartridge section below describes how these parameters are represented when storing custom parameters in a Common Cartridge.&nbsp;</p>
+	<p>When there are <strong>custom</strong> name / value parameters in the launch, a POST parameter is included for each custom parameter.&nbsp; The parameter names are mapped to lower case and any character that is neither a number nor letter in a parameter name is replaced with an "underscore".&nbsp; So if a <strong>custom</strong> entry was as follows:</p>
+	<p style="margin-left:.5in;">Review:Chapter=1.2.56</p>
+	<p>Would map to:</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; custom_review_chapter=1.2.56</p>
+	<p>Creators of Basic LTI links would be well served to limit their parameter names to lower case and to use no punctuation other than underscores.</p>
+	<p>If these custom parameters are included in the Basic LTI link, the TC must include them in the launch data or the TP may fail to function.</p>
+	<p>In addition to these data items for the Basic LTI launch, the next section describes additional security parameters which are to be included with the launch.</p>
+	<h1>4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Basic LTI Security Model</h1>
+	<div class="toc-item-anchor"><a name="toc-3"></a></div><h2 class=" toc-headings">4.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Basic LTI Credential Management</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<p><em>This section is taken from the</em> LTI Tool Management [LTI, 10 TMT] <em>documentation.</em></p>
+	<p>The security environment for Basic LTI launches must be set up using out-of-band interactions between the TP administrator and either the TC administrator or an instructor who will be authoring a Basic LTI link.</p>
+	<p>There are three possible credentials (keys and secrets) associated with a particular Basic LTI launch, listed in precedence order where TP domain credentials have the highest precedence.</p>
+	<p style="margin-left:.5in;">&bull;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Credentials associated with a TP domain.</strong>&nbsp; These credentials authorize access to all TP URLs from the TC. Once the TP domain credentials are established for a TP, all Basic LTI tool launches to the TP will use this same secret.&nbsp; Using TP domain credentials gives TPs the option of trusting user information and context information across multiple contexts within a particular TC instance as being maintained properly by the TC.</p>
+	<p>In order to select which TP domain credentials are used for a particular LTI link, the TC examines the domain name in the launch URL for the LTI link. The TP domain credentials are looked up after scanning the domain name of the launch URL.&nbsp; So for example, if the launch URL was:</p>
+	<p>http://launch.math.vendor.com/launch.php</p>
+	<p>The TC would prefer the following TP domain credentials in order from specific to general: launch.math.vendor.com , math.vendor.com, and then vendor.com.&nbsp; So when TPs are generating link URLs and giving them to an instructor or embedding those links in a cartridge, it is important to use consistent domain names in those launch URLs so as to be able to match a TP domain credentials for a particular TP with the appropriate launches.</p>
+	<p style="margin-left:.5in;">&bull;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Credentials associated with a TP URL.</strong> These credentials authorize access to a particular TP URL from the TC<strong>.</strong> These are typically used when the administrator is enabling a remote tool within the TC with a preset configuration which can be added to a context by the instructor with little or no further configuration.</p>
+	<p style="margin-left:.5in;">&bull;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Credentials</strong> <strong>associated with a particular link.</strong> &nbsp;These credentials authorize access to the resource at the URL specified by the link. These credentials are typically entered by the instructor at the moment that the link is created in the context.</p>
+	<p>Basic LTI launches can happen from the TC with any combination of credentials. When more than one is present, the TC uses the highest precedent credentials to sign the request.</p>
+	<p>If there are no credentials available for this launch and the TC wants to perform the launch, the TC should not sign the launch data using OAuth.&nbsp; The TC can decide if it wants to send unsigned requests and the TP can decide if it wants to accept unsigned requests.&nbsp; A TC may also choose to treat the lack of credentials as an error and refuse to perform the launch.</p>
+	<p>&nbsp;</p>
+	<div class="toc-item-anchor"><a name="toc-4"></a></div><h2 class=" toc-headings">4.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Basic LTI Message Signing</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<p><em>Note: This section is taken verbatim the</em> LTI Messages <em>documentation.</em></p>
+	<p>OAuth is a security mechanism designed to protect POST and GET requests.&nbsp; This section only applies to protecting launch and other LTI messages that are being serialized and sent using POST.</p>
+	<p>The site http://www.oauth.net contains the specification for OAuth 1.0 and sample source code for implementing OAuth security.&nbsp; OAuth 1.0 specifies how to construct a base message string and then sign that string using the secret.&nbsp; The signature is then sent as part of the POST request and is validated by the TP using OAuth.</p>
+	<p>Per the OAuth specification, the signing process produces a number of values that are to be added to the launch request:</p>
+	<p style="margin-left:.5in;">oauth_consumer_key=b289378-f88d-2929-lmsng.school.edu</p>
+	<p style="margin-left:.5in;">oauth_signature_method=HMAC-SHA1</p>
+	<p style="margin-left:.5in;">oauth_timestamp=1244834250</p>
+	<p style="margin-left:.5in;">oauth_nonce=1244834250435893000</p>
+	<p style="margin-left:.5in;">oauth_version=1.0</p>
+	<p>oauth_signature=Xddn2A%2BjzwjgBIVYkvigaKxCdcc%3D</p>
+	<p>&nbsp;</p>
+	<p>The important values for signing a message using OAuth are the <strong>oauth_consumer_key</strong> and <strong>oauth_consumer_secret</strong>. The value of the <strong>oauth_consumer_key</strong> depends on which credentials are being used.&nbsp;</p>
+	<p>The <strong>oauth_consumer_key</strong> is passed in the message as plain text and identifies which TC is sending the message allowing the TP to look up the appropriate secret for validation.&nbsp; The <strong>oauth_consumer_secret</strong> is used to sign the message.</p>
+	<p>TC and TP must support and use the <strong>HMAC-SHA1</strong> signing method with OAuth fields coming from POST parameters.</p>
+	<p>Since we are using OAuth in a signing-only scenario (i.e., we are not using OAuth to transfer third-party identity), there is no need for an <strong>oauth_token</strong> as per OAuth 1.0 documentation section 6.2.3<strong>.&nbsp;</strong> Since most of the OAuth implementations in the marketplace have upgraded to OAuth 1.0A, Tool Consumers should include <strong>oauth_callback</strong>&nbsp; and set it to a value such as "about:blank".&nbsp; Note that Basic LTI's <strong>launch_presentation_return_url</strong> serves a very different purpose than OAuth's <strong>oauth_callback</strong>.</p>
+	<p>Upon receipt of the POST, the TP will perform the OAuth validation utilizing the shared secret it has stored for the <strong>oauth_consumer_key</strong>.&nbsp; The timestamp should also be validated to be within a specific time interval.&nbsp; This time interval can be TP defined, but should be small (on the order of a few minutes if you do not record nonces or a few hours if you do).</p>
+	<p>The TP should keep a record of nonces received and only allow the use of any nonce a single time.&nbsp; Combined with the timestamp, this means that they only have to keep track of nonces for a period of time equal to their acceptable time interval.&nbsp; Recommended practice would be to have a time interval of 90 minutes so that you keep a record of nonces for 90 minutes.&nbsp;</p>
+	<p>NOTE that this security profile requires the TC and TP to have synchronized clocks.&nbsp; The use of a configurable time interval can adjust for slightly-off clocks, but setting the interval too large is discouraged.</p>
+	<h1>5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Representing Basic LTI Links in a Cartridge</h1>
+	<p><em>Note: This section is taken from the</em> LTI Common Cartridge Interaction [LTI, 10 CCI] <em>documentation.</em></p>
+	<p>A Basic LTI link is a simplified and self-contained LTI link. The Basic LTI link is defined in the resource section of an 1EdTech Common Cartridge as follows:</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;resource identifier="I_00010_R" type="imsbasiclti_xmlv1p0"&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;file href="I_00001_R/BasicLTI.xml"/&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/resource&gt;</p>
+	<p>The <strong>href</strong> in the resource entry refers to a file path in the cartridge that contains an XML description of the Basic LTI link.</p>
+	<p>&nbsp;</p>
+	<p>&lt;?xml version="1.0" encoding="UTF-8"?&gt;</p>
+	<p>&lt;cartridge_basiclti_link xmlns="http://www.imsglobal.org/xsd/imslticc_v1p0"</p>
+	<p>&nbsp;&nbsp;&nbsp; xmlns:blti = "http://www.imsglobal.org/xsd/imsbasiclti_v1p0"</p>
+	<p>&nbsp;&nbsp;&nbsp; xmlns:lticm ="http://www.imsglobal.org/xsd/imslticm_v1p0"</p>
+	<p>&nbsp;&nbsp;&nbsp; xmlns:lticp ="http://www.imsglobal.org/xsd/imslticp_v1p0"</p>
+	<p>&nbsp;&nbsp;&nbsp; xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"</p>
+	<p>&nbsp;&nbsp;&nbsp; xsi:schemaLocation = "http://www.imsglobal.org/xsd/imslticc_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticc_v1p0.xsd</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; http://www.imsglobal.org/xsd/imsbasiclti_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imsbasiclti_v1p0.xsd</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;http://www.imsglobal.org/xsd/imslticm_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticm_v1p0.xsd</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; http://www.imsglobal.org/xsd/imslticp_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticp_v1p0.xsd"&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;blti:title&gt;Grade Book&lt;/blti:title&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;blti:description&gt;Grade Book with many column types&lt;/blti:description&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;blti:custom&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;lticm:property name="keyname"&gt;value&lt;/lticm:property&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;/blti:custom&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;blti:extensions platform="my.lms.com"&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;lticm:property name="keyname"&gt;value&lt;/lticm:property&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;/blti:extensions&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;blti:launch_url&gt;url to the basiclti launch URL&lt;/blti:launch_url&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;blti:secure_launch_url&gt;secure url to the basiclti launch URL&lt;/blti:secure_launch_url&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;blti:icon&gt;url to an icon for this tool (optional)&lt;/blti:icon&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;blti:secure_icon&gt;secure url to an icon for this tool (optional)&gt;&lt;/blti:secure_icon&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;blti:vendor&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;lticp:code&gt;vendor.com&lt;/lticp:code&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;lticp:name&gt;vendor.name&lt;/lticp:name&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;lticp:description&gt;This is a vendor of learning tools.&lt;/lticp:description&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;lticp:url&gt;http://www.vendor.com/&lt;/lticp:url&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;lticp:contact&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;lticp:email&gt;support@vendor.com&lt;/lticp:email&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/lticp:contact&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;/blti:vendor&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;cartridge_bundle identifierref="BLTI001_Bundle"/&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; &lt;cartridge_icon identifierref="BLTI001_Icon"/&gt;</p>
+	<p>&lt;/cartridge_basiclti_link&gt;</p>
+	<p>&nbsp;</p>
+	<p>The <strong>launch_url</strong> contains the URL to which the LTI Launch is to be sent.&nbsp;&nbsp; The <strong>secure_launch_url</strong> is the URL to use if secure http is required.&nbsp; One of either the <strong>launch_url</strong> or the <strong>secure_launch_url</strong> must be specified. It is acceptable to specify both and if both are specified, the TC decides which to use. Typically, the TC will use a <strong>secure_launch_url</strong> when embedding the Tool in a secure page and the <strong>launch_url</strong> when embedding the tool in a non-secure page. So, it&rsquo;s important that the TP provides the same functionality whether the <strong>launch_url</strong> or <strong>secure_launch_url</strong> is used.</p>
+	<p>&nbsp;</p>
+	<p>The <strong>icon</strong> and <strong>secure_icon</strong> are both optional and indicate a URL to be used for an icon to the tool.</p>
+	<p>Once the Basic LTI link is defined in the resources section of the cartridge manifest, it can be referenced in the organization section of the manifest as needed:</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;item identifier="BasicLTI1" identifierref="I_00010_R"&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;Homework Problems&lt;/title&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/item&gt;</p>
+	<p>&nbsp;</p>
+	<p>The TC will generally display the <strong>title</strong> in the <strong>item</strong> entry in the user interface rather than <strong>title</strong> in the <strong>basic_lti_link</strong> entry.</p>
+	<p>The optional <strong>custom</strong> section can contain a set of key value pairs that were placed in the link in the system that originally authored the link.&nbsp; For example if the link were a section in an eTextbook, there might be a setting like:</p>
+	<p>&nbsp;</p>
+	<p style="margin-left:.5in;">&lt;parameter key="section"&gt;1.2.7&lt;/parameter&gt;</p>
+	<p>These parameters are sent back to the external tool when the tool is launched.&nbsp; If Basic LTI link is imported and then exported the <strong>custom</strong> should be maintained across the import/export process unless the intent is to re-author the link.</p>
+	<p>The <strong>extensions</strong> section allows the hosting TC to add its own key/value pairs to the link. The TC may use extensions to store information that the TC or authoring environment might use across an export-import cycle.&nbsp; In order to allow multiple sets of extensions to be contained in the same Basic LTI descriptor, authoring environments should add the <strong>platform</strong> attribute and include an identifier that identifies the authoring environment.</p>
+	<p>It is possible to include the icon for the link in the cartridge instead of including it as a URL using the <strong>cartridge_icon</strong> entry in the descriptor.&nbsp; The <strong>identifierref</strong> attribute points to a link that includes the icon image and a dependency is added to the resource section of the Basic LTI resource entry in the manifest as shown below.</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;resource identifier="I_00010_R" type="imsbasiclti_xmlv1p0"&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;file href="I_00001_R/BasicLTI.xml"/&gt;</p>
+	<p style="margin-left:.5in;">&lt;dependency identifierref="BLTI001_Icon"/&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/resource&gt;</p>
+	<p>&nbsp;</p>
+	<p>&lt;resource identifier="BLTI001_Icon"</p>
+	<p>type="associatedcontent/imscc_xmlv1p0/learning-application-resource"&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;file href="BLTI001_Media/learning_icon.gif"/&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/resource&gt;</p>
+	<p>&nbsp;</p>
+	<h1>6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Using Learning Information Services with Basic LTI</h1>
+	<p>Basic LTI does not provide support for Full LTI run-time services. However, if a Tool Consumer (TC) and Tool Provider (TP) have access to a common set of 1EdTech Learning Information Services (LIS) [LIS, 10a], a Basic LTI launch can provide information to the TP that could be used by the TP to call LIS services.</p>
+	<p>&nbsp;</p>
+	<p align="center"><img alt="Figure 6.1 The TP taking advantage of LIS services." border="0" height="218" id="O 5" name="O 5" src="/sites/default/files/lti/blti/bltiv1p0/images/ltiBLTIimgv1p0image003.gif" width="577"></p>
+	<p align="center"><strong>Figure 6.1</strong> The TP taking advantage of LIS services.</p>
+	<p>&nbsp;</p>
+	<p>The LIS services could be provided by a third system such as a Student Information System, or perhaps the TC system is the provider of the LIS services to be used by the TP.</p>
+	<p>Any and all arrangements between the TP and the LIS services surrounding the use of these identifiers passed in a Basic LTI launch request are defined by the 1EdTech LIS specification.&nbsp; Basic LTI simply communicates identifiers to be used when calling LIS services if those services and identifiers are available.&nbsp; These additional parameters are optional.&nbsp; The TC does not have to include these parameters and the TP can ignore these parameters if present.</p>
+	<p>&nbsp;</p>
+	<p><strong>lis_person_sourcedid=school.edu:user</strong><br>
+		This field contains the LIS identifier for the user account that is performing this launch.&nbsp;&nbsp;&nbsp; The example syntax of "school:user" is not the required format &ndash; <strong>lis_person_sourcedid</strong> is simply a globally unique identifier (i.e., a normalized string). This field is optional and its content and meaning are defined by LIS.&nbsp;&nbsp;&nbsp;</p>
+	<p>&nbsp;</p>
+	<p><strong>lis_course_offering_sourcedid=school.edu:SI182-F08</strong></p>
+	<p><strong>lis_course_section_sourcedid=school.edu:SI182-001-F08</strong></p>
+	<p>These fields contain LIS course identifiers associated with the context of this launch.&nbsp; These fields are optional and their content and meaning are defined by LIS.</p>
+	<p>&nbsp;</p>
+	<p><strong>lis_result_sourcedid=83873872987329873264783687634</strong><br>
+		This field contains an identifier that indicates the LIS Result Identifier (if any) associated with this launch. This field is optional and its content and meaning is defined by LIS.&nbsp;&nbsp;&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>Basic LTI does not address any issues regarding provisioning, discovery, or security arrangements between the TP and the LIS services &ndash; these are all out of band arrangements.&nbsp; The values provided by Basic LTI can be used when using LIS services after the arrangements have been made between the LIS and TP systems.</p>
+	<h1>Appendix A &ndash; LTI Standard Vocabularies</h1>
+	<p><em>This Appendix is taken verbatim from the</em> LTI Messages [LTI, 10 MSS] <em>documentation.</em></p>
+	<p>The LTI v1.0 specification uses URN values to identify certain entities. This section contains URN vocabularies for ContextType and Role values.</p>
+	<p>&nbsp;</p>
+	<div class="toc-item-anchor"><a name="toc-5"></a></div><h2 class=" toc-headings">A.1 &nbsp;&nbsp; ContextType Vocabularies</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<div class="toc-item-anchor"><a name="toc-14"></a></div><h3 class=" toc-headings">A.1.1 &nbsp;&nbsp;&nbsp;&nbsp; LIS vocabulary for ContextType</h3>
+	<table border="1" cellpadding="0" cellspacing="0"><tbody><tr><td style="width:121px;">
+					<p><strong>Handle</strong></p>
+				</td>
+				<td style="width:517px;">
+					<p><strong>Full URN</strong></p>
+				</td>
+			</tr><tr><td style="width:121px;">
+					<p>CourseTemplate</p>
+				</td>
+				<td style="width:517px;">
+					<p>urn:lti:context-type:ims/lis/CourseTemplate</p>
+				</td>
+			</tr><tr><td style="width:121px;">
+					<p>CourseOffering</p>
+				</td>
+				<td style="width:517px;">
+					<p>urn:lti:context-type:ims/lis/CourseOffering</p>
+				</td>
+			</tr><tr><td style="width:121px;">
+					<p>CourseSection</p>
+				</td>
+				<td style="width:517px;">
+					<p>urn:lti:context-type:ims/lis/CourseSection</p>
+				</td>
+			</tr><tr><td style="width:121px;">
+					<p>Group</p>
+				</td>
+				<td style="width:517px;">
+					<p>urn:lti:context-type:ims/lis/Group</p>
+				</td>
+			</tr></tbody></table><div class="toc-item-anchor"><a name="toc-6"></a></div><h2 class=" toc-headings">A.2 &nbsp;&nbsp; Role Vocabularies</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<div class="toc-item-anchor"><a name="toc-15"></a></div><h3 class=" toc-headings">A.2.1 &nbsp;&nbsp;&nbsp;&nbsp; LIS vocabulary for System Role</h3>
+	<p>The following table lists URN values for system role as defined by the LIS standard.</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="width:637px;width:637px;" width="637"><tbody><tr><td style="width:265px;">
+					<p><strong>Handle</strong></p>
+				</td>
+				<td style="width:372px;">
+					<p><strong>Full URN</strong></p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>SysAdmin</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:sysrole:ims/lis/SysAdmin</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>SysSupport</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:sysrole:ims/lis/SysSupport</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Creator</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:sysrole:ims/lis/Creator</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>AccountAdmin</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:sysrole:ims/lis/AccountAdmin</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>User</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:sysrole:ims/lis/User</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Administrator</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:sysrole:ims/lis/Administrator</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>None</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:sysrole:ims/lis/None</p>
+				</td>
+			</tr></tbody></table><p>&nbsp;</p>
+	<div class="toc-item-anchor"><a name="toc-16"></a></div><h3 class=" toc-headings">A.2.2 &nbsp;&nbsp;&nbsp;&nbsp; LIS vocabulary for Institution Role</h3>
+	<p>The following table lists URN values for institution roles as defined by the LIS standard</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="width:637px;width:637px;" width="637"><tbody><tr><td style="width:265px;">
+					<p><strong>Handle</strong></p>
+				</td>
+				<td style="width:372px;">
+					<p><strong>Full URN</strong></p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Student</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/Student</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Faculty</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/Faculty</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Member</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/Member</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Learner</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/Learner</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Instructor</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/Instructor</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Mentor</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/Mentor</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Staff</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/Staff</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Alumni</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/Alumni</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>ProspectiveStudent</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/ProspectiveStudent</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Guest</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/Guest</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Other</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/Other</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Administrator</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/Administrator</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>Observer</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/Observer</p>
+				</td>
+			</tr><tr><td style="width:265px;">
+					<p>None</p>
+				</td>
+				<td style="width:372px;">
+					<p>urn:lti:instrole:ims/lis/None</p>
+				</td>
+			</tr></tbody></table><p>&nbsp;</p>
+	<div class="toc-item-anchor"><a name="toc-17"></a></div><h3 class=" toc-headings">A.2.3 &nbsp;&nbsp;&nbsp;&nbsp; LIS vocabulary for Context Role</h3>
+	<p>Roles within the LIS standard [LIS, 10a] consist of a&nbsp; RoleType and an optional SubRoleType.&nbsp; The handle for the corresponding URN value contains both elements, separated by a slash.&nbsp;</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="width:655px;" width="655"><tbody><tr><td style="width:289px;">
+					<p><strong>Handle</strong></p>
+				</td>
+				<td style="width:366px;">
+					<p><strong>Full URN</strong></p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Learner</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Learner</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Learner/Learner</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Learner/Learner</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Learner/NonCreditLearner</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Learner/<br>
+						NonCreditLearner</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Learner/GuestLearner</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Learner/<br>
+						GuestLearner</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Learner/ExternalLearner</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Learner/<br>
+						ExternalLearner</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Learner/Instructor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Learner/Instructor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Instructor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Instructor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Instructor/PrimaryInstructor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Instructor/PrimaryInstructor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Instructor/Lecturer</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Instructor/Lecturer</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Instructor/GuestInstructor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Instructor/<br>
+						GuestInstructor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Instructor/ExternalInstructor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Instructor/<br>
+						ExternalInstructor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>ContentDeveloper</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/ContentDeveloper</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>ContentDeveloper/ContentDeveloper</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/ContentDeveloper/<br>
+						ContentDeveloper</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>ContentDeveloper/Librarian</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/ContentDeveloper/Librarian</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>ContentDeveloper/ContentExpert</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/ContentDeveloper/ContentExpert</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>ContentDeveloper/ExternalContentExpert</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/ContentDeveloper/<br>
+						ExternalContentExpert</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Member</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Member</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Member/Member</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Member/Member</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Manager</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Manager</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Manager/AreaManager</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Manager/AreaManager</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Manager/CourseCoordinator</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Manager/CourseCoordinator</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Manager/Observer</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Manager/Observer</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Manager/ExternalObserver</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Manager/ExternalObserver</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor/Mentor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor/Mentor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor/Reviewer</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor/Reviewer</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor/Advisor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor/Advisor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor/Auditor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor/Auditor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor/Tutor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor/Tutor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor/LearningFacilitator</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor/LearningFacilitator</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor/ExternalMentor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor/ExternalMentor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor/ExternalReviewer</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor/ExternalReviewer</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor/ExternalAdvisor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor/ExternalAdvisor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor/ExternalAuditor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor/ExternalAuditor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor/ExternalTutor</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor/ExternalTutor</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Mentor/ExternalLearningFacilitator</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Mentor/<br>
+						ExternalLearningFacilitator</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Administrator</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Administrator</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Administrator/Administrator</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Administrator/Administrator</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Administrator/Support</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Administrator/Support</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Administrator/Developer</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Administrator/ExternalDeveloper</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Administrator/SystemAdministrator</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Administrator/SystemAdministrator</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Administrator/ExternalSystemAdministrator</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Administrator/<br>
+						ExternalSystemAdministrator</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Administrator/ExternalDeveloper</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Administrator/ExternalDeveloper</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>Administrator/ExternalSupport</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/Administrator/ExternalSupport</p>
+				</td>
+			</tr><tr><td style="width:289px;height:20px;">
+					<p>TeachingAssistant</p>
+				</td>
+				<td style="width:366px;height:20px;">
+					<p>urn:lti:role:ims/lis/TeachingAssistant</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>TeachingAssistant/TeachingAssistant</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/TeachingAssistant/<br>
+						TeachingAssistant</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>TeachingAssistant/TeachingAssistantSection</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/TeachingAssistant/<br>
+						TeachingAssistantSection</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>TeachingAssistant/<br>
+						TeachingAssistantSectionAssociation</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/TeachingAssistant/<br>
+						TeachingAssistantSectionAssociation</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>TeachingAssistant/<br>
+						TeachingAssistantOffering</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/TeachingAssistant/<br>
+						TeachingAssistantOffering</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>TeachingAssistant/<br>
+						TeachingAssistantTemplate</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/TeachingAssistant/<br>
+						TeachingAssistantTemplate</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>TeachingAssistant/TeachingAssistantGroup</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/TeachingAssistant/<br>
+						TeachingAssistantGroup</p>
+				</td>
+			</tr><tr><td style="width:289px;">
+					<p>TeachingAssistant/Grader</p>
+				</td>
+				<td style="width:366px;">
+					<p>urn:lti:role:ims/lis/TeachingAssistant/Grader</p>
+				</td>
+			</tr></tbody></table><h1>Appendix B - Implementation Practice</h1>
+	<p>This section includes <em>non-normative</em> discussion and recommendations to help guide implementations.</p>
+	<div class="toc-item-anchor"><a name="toc-7"></a></div><h2 class=" toc-headings">B.1 &nbsp;&nbsp; Authoring Links with Link-Level Credentials</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<p>If the TC chooses to support link-level credentials, they are supporting the ability for the Instructor to author Basic LTI links inside of the TC.&nbsp; The minimal authoring screen is very simple.&nbsp;</p>
+	<p align="center"><img alt="Figure B.2 Authoring screen for Basic LTI links inside of the TC. " border="0" height="165" src="/sites/default/files/lti/blti/bltiv1p0/images/ltiBLTIimgv1p0image004.gif" width="455"> .</p>
+	<p align="center"><strong>Figure B.2</strong> Authoring screen for Basic LTI links inside of the TC.</p>
+	<p align="center">&nbsp;</p>
+	<br clear="all"><p>Another possible authoring interface might be to allow the pasting of the XML <strong>basic_lti_link</strong> descriptor into an input field.</p>
+	<p align="center"><br><img alt='Text Box: &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ &lt;basic_lti_link xmlns="http://www.imsglobal.org/xsd/imsbasiclti_v1p0"
+  xmlns:lticm ="http://www.imsglobal.org/xsd/imslticm_v1p0"
+  xmlns:lticp ="http://www.imsglobal.org/xsd/imslticp_v1p0"
+  xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation = "http://www.imsglobal.org/xsd/imsbasiclti_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imsbasiclti_v1p0.xsd 
+  http://www.imsglobal.org/xsd/imslticm_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticm_v1p0.xsd 
+  http://www.imsglobal.org/xsd/imslticp_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticp_v1p0.xsd"&gt;
+  &lt;title&gt;Grade Book&lt;/title&gt;
+  &lt;description&gt;Grade Book with many column types&lt;/description&gt;
+  &lt;custom&gt;
+  &lt;lticm:property  data-cke-saved-name="keyname"&gt;value&lt;/lticm:property&gt;
+ name="keyname"&gt;value&lt;/lticm:property&gt;
+  &lt;/custom&gt;
+  &lt;extensions platform="my.lms.com"&gt;
+  &lt;lticm:property  data-cke-saved-name="keyname"&gt;value&lt;/lticm:property&gt;
+ name="keyname"&gt;value&lt;/lticm:property&gt;
+  &lt;/extensions&gt;
+  &lt;launch_url&gt;url to the basiclti launch URL&lt;/launch_url&gt;
+  &lt;secure_launch_url&gt;secure url to the basiclti launch URL&lt;/secure_launch_url&gt;
+  &lt;icon&gt;url to an icon for this tool (optional)&lt;/icon&gt;
+  &lt;secure_icon&gt;secure url to an icon for this tool (optional)&gt;&lt;/secure_icon&gt; 
+  &lt;vendor&gt;
+  &lt;lticp:code&gt;vendor.com&lt;/lticp:code&gt;
+  &lt;lticp:name&gt;vendor.name&lt;/lticp:name&gt;
+  &lt;lticp:description&gt;This is a vendor of learning tools.&lt;/lticp:description&gt;
+  &lt;lticp:url&gt;http://www.vendor.com/&lt;/lticp:url&gt;
+  &lt;lticp:contact&gt;
+  &lt;lticp:email&gt;support@vendor.com&lt;/lticp:email&gt;
+  &lt;/lticp:contact&gt;
+  &lt;/vendor&gt;
+ &lt;/basic_lti_link&gt;
+ ' height="417" src="/sites/default/files/lti/blti/bltiv1p0/images/ltiBLTIimgv1p0image005.gif" width="663"></p>
+	<p align="center"><strong>Figure B.3</strong> Sample pasting of a Basic LTI link in XML.</p>
+	<p align="center">&nbsp;</p>
+	<p>As a best practice, TC systems should support both the URL/Key/Secret and XML/Key/Secret of authoring a Basic LTI link. The user interface for these options and how and where these options are shown to the user is up to the TC.</p>
+	<p>The TC might add other features like frame height, "open in new window" or add a title field to the link entry.</p>
+	<p align="center"><img alt="Figure B.4 Sample interface for including various options inside the TC." border="0" height="255" src="/sites/default/files/lti/blti/bltiv1p0/images/ltiBLTIimgv1p0image006.gif" width="432"></p>
+	<p align="center"><strong>Figure B.4</strong> Sample interface for including various options inside the TC.</p>
+	<p>&nbsp;</p>
+	<p>These screens will be available in the TC where the Instructor is creating the course organization and adding a new link.&nbsp; A typical approach is to make creating a Basic LTI launch just one more type of TC link in the course structure.</p>
+	<div class="toc-item-anchor"><a name="toc-8"></a></div><h2 class=" toc-headings">B.2 &nbsp;&nbsp; Security Policy / SandBoxing Launch Requests</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<p>TC systems will likely implement a number of security policy related features that can be controlled by both the TC administrator and the Instructor.&nbsp; These are some considerations:</p>
+	<ul><li>TC systems will likely limit the transmission of identifying information for users such as name and E-Mail to a trusted set of TPs.</li>
+		<li>TC Administrators may want to allow only certain approved/trusted Instructors to be allowed to author their own Basic LTI links.</li>
+		<li>The TC system may want the ability of an Instructor to further reduce/sandbox the data items transmitted to a TP.</li>
+	</ul><p>It is out of the scope of this document to specify how the TC system controls which instructors can author Basic LTI links or which URLs can be launched using Basic LTI or which data is shared with particular TPs.</p>
+	<div class="toc-item-anchor"><a name="toc-9"></a></div><h2 class=" toc-headings">B.3 &nbsp;&nbsp; Roles</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<p>Some of the commonly used roles from LIS include <strong>Learner</strong>, <strong>Instructor</strong>, <strong>Administrator</strong>, <strong>TeachingAssistant</strong>, <strong>ContentDeveloper</strong>, and <strong>Mentor</strong>.&nbsp; Multiple roles can be included, separated by commas.&nbsp; TC systems should include as many roles as appropriate for the user (i.e., more roles are better).&nbsp; TC systems should be aware that simple TPs will key off the presence or absence of the <strong>Instructor</strong> role and group users into those with the <strong>Instructor</strong> role (read-write-configure) and those without the <strong>Instructor</strong> role (read).</p>
+	<p>&nbsp;</p>
+	<div class="toc-item-anchor"><a name="toc-10"></a></div><h2 class=" toc-headings">B.4 &nbsp;&nbsp; Non-Context LTI Launches</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<p>While the typical use of a Basic LTI link is in a context, it is also possible to use Basic LTI to launch a link that is not part of a context.&nbsp; One example of a non-context launch might be a menu item that is part of the portal or part of a global menu in the TC.</p>
+	<p>Supporting non-context launches is optional for both the TP and TC.</p>
+	<p>If a Basic LTI launch is coming from a non-context placement, the context information is simply omitted and the launch will contain the user and organization information but no context information.</p>
+	<div class="toc-item-anchor"><a name="toc-11"></a></div><h2 class=" toc-headings">B.5 &nbsp;&nbsp; Basic LTI Sample Launch</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<p>The Basic LTI launch protocol is a POST to the launch URL with the Basic LTI parameters described above, properly signed using OAuth.&nbsp;</p>
+	<p>The most common launch approach will be for the TC to emit a form to the browser and then include code to automatically submit the form to the launch URL.&nbsp; The TP will assume that it is in a browser, process the input parameters, setting session information if necessary and optionally redirecting.</p>
+	<p>Here is a sample of an HTML form using a password of "secret" and <strong>oauth_consumer_key</strong> of "12345".</p>
+	<p>&lt;div id="ltiLaunchFormSubmitArea"&gt;</p>
+	<p>&lt;form action="http://dr-chuck.com/ims/php-simple/tool.php"</p>
+	<p>&nbsp;&nbsp;&nbsp; name="ltiLaunchForm" id="ltiLaunchForm" method="post"</p>
+	<p>&nbsp;&nbsp;&nbsp; encType="application/x-www-form-urlencoded"&gt;</p>
+	<p>&lt;input type="hidden" name="oauth_version" value="1.0"/&gt;</p>
+	<p>&lt;input type="hidden" name="oauth_nonce" value="c8350c0e47782d16d2fa48b2090c1d8f"/&gt;</p>
+	<p>&lt;input type="hidden" name="oauth_timestamp" value="1251600739"/&gt;</p>
+	<p>&lt;input type="hidden" name="oauth_consumer_key" value="12345"/&gt;</p>
+	<p>&lt;input type="hidden" name="resource_link_id" value="120988f929-274612"/&gt;</p>
+	<p>&lt;input type="hidden" name="user_id" value="292832126"/&gt;</p>
+	<p>&lt;input type="hidden" name="roles" value="Instructor"/&gt;</p>
+	<p>&lt;input type="hidden" name="lis_person_name_full" value="Jane Q. Public"/&gt;</p>
+	<p>&lt;input type="hidden" name="lis_person_contact_email_primary" value="user@school.edu"/&gt;</p>
+	<p>&lt;input type="hidden" name="lis_person_sourced_id" value="school.edu:user"/&gt;</p>
+	<p>&lt;input type="hidden" name="context_id" value="456434513"/&gt;</p>
+	<p>&lt;input type="hidden" name="context_title" value="Design of Personal Environments"/&gt;</p>
+	<p>&lt;input type="hidden" name="context_label" value="SI182"/&gt;</p>
+	<p>&lt;input type="hidden" name="lti_version" value="LTI-1p0"/&gt;</p>
+	<p>&lt;input type="hidden" name="lti_message_type" value="basic-lti-launch-request"/&gt;</p>
+	<p>&lt;input type="hidden" name="tool_consumer_instance_guid" value="lmsng.school.edu"/&gt;</p>
+	<p>&lt;input type="hidden" name="tool_consumer_instance_description"</p>
+	<p>&nbsp;&nbsp;&nbsp; value="University of School (LMSng)"/&gt;</p>
+	<p>&lt;input type="submit" name="basiclti_submit" value="Launch Endpoint with BasicLTI Data"/&gt;</p>
+	<p>&lt;input type="hidden" name="oauth_signature_method" value="HMAC-SHA1"/&gt;</p>
+	<p>&lt;input type="hidden" name="oauth_callback" value="about:blank"/&gt;</p>
+	<p>&lt;input type="hidden" name="oauth_signature" value="TPFPK4u3NwmtLt0nDMP1G1zG30U="/&gt;</p>
+	<p>&lt;/form&gt;</p>
+	<p>&lt;/div&gt;</p>
+	<p>&lt;script language="javascript"&gt;</p>
+	<p>&nbsp;&nbsp;&nbsp; document.getElementById("ltiLaunchFormSubmitArea").style.display = "none";</p>
+	<p>&nbsp;&nbsp;&nbsp; nei = document.createElement('input');</p>
+	<p>&nbsp;&nbsp;&nbsp; nei.setAttribute('type', 'hidden');</p>
+	<p>&nbsp;&nbsp;&nbsp; nei.setAttribute('name', 'basiclti_submit');</p>
+	<p>&nbsp;&nbsp;&nbsp; nei.setAttribute('value', 'Press to continue to external tool.');</p>
+	<p>&nbsp;&nbsp;&nbsp; document.getElementById("ltiLaunchForm").appendChild(nei);</p>
+	<p>&nbsp;&nbsp;&nbsp; document.ltiLaunchForm.submit();</p>
+	<p>&nbsp;&lt;/script&gt;</p>
+	<p>&nbsp;</p>
+	<p>This form is designed to work even if JavaScript is turned off in the browser &ndash; the user simply presses the submit button.&nbsp; If JavaScript is on, the button is quickly hidden and the form is automatically submitted.&nbsp;</p>
+	<p>The JavaScript must add a hidden field to the form when it is auto-submitting the form because the submit value was included in the OAuth base string and signature computation.</p>
+	<p>The following is the base string prior to the OAuth signature computation:</p>
+	<p>&nbsp;</p>
+	<p>POST&amp;http%3A%2F%2Fdr-chuck.com%2Fims%2Fphp-simple%2Ftool.php&amp;basiclti_submit%3DLaunch%2520Endpoint%2520with%2520BasicLTI%2520Data%26context_id%3D456434513%26context_label%3DSI182%26context_title%3DDesign%2520of%2520Personal%2520Environments%26lis_person_contact_email_primary%3Duser%2540school.edu%26lis_person_name_full%3DJane%2520Q.%2520Public%26lis_person_sourced_id%3Dschool.edu%253Auser%26lti_message_type%3Dbasic-lti-launch-request%26lti_version%3DLTI-1p0%26oauth_consumer_key%3D12345%26oauth_nonce%3Dc8350c0e47782d16d2fa48b2090c1d8f%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1251600739%26oauth_version%3D1.0%26resource_link_id%3D120988f929-274612%26roles%3DInstructor%26tool_consumer_instance_description%3DUniversity%2520of%2520School%2520%2528LMSng%2529%26tool_consumer_instance_guid%3Dlmsng.school.edu%26user_id%3D292832126</p>
+	<p>&nbsp;</p>
+	<p>In the above string, all line wrapping needs to be removed.&nbsp; Notice that all of the POST values, including the submit button, are included in the base string (i.e., the string signed by OAuth).</p>
+	<div class="toc-item-anchor"><a name="toc-12"></a></div><h2 class=" toc-headings">B.6&nbsp;&nbsp;&nbsp; Conformance</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<p>Conformance for Basic LTI is granted through the 1EdTech CC-LTI Alliance and consists of certification testing for TC and TP implementations. For additional information about conformance, visit the CC-LTI Alliance here: <a href="/cc/alliance.html">http://www.imsglobal.org/cc/alliance.html</a>.</p>
+	<p>&nbsp;</p>
+	<h1>About This Document</h1>
+	<p style="margin-left:2.0in;">&nbsp;</p>
+	<p style="margin-left:2.0in;"><strong>Title:</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1EdTech Learning Tools Interoperability Basic LTI Implementation Guide</p>
+	<p style="margin-left:2.0in;"><strong>Co-chairs:</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Greg McFall (Pearson), Lance Neumann (Blackboard)</p>
+	<p style="margin-left:2.0in;"><strong>Editor:</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Charles Severance (1EdTech)</p>
+	<p style="margin-left:2.0in;"><strong>Version:</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; v1.0</p>
+	<p style="margin-left:2.0in;"><strong>Version Date</strong>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 17 May 2010</p>
+	<p style="margin-left:2.0in;"><strong>Release</strong>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; v1.0</p>
+	<p style="margin-left:2.0in;"><strong>Status:</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Final</p>
+	<p style="margin-left:2.0in;"><strong>Revision Information:</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Original Release</p>
+	<p style="margin-left:2.0in;"><strong>Purpose:</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This document is made available for adoption by the public community at large.</p>
+	<p style="margin-left:2.0in;"><strong>Document Location:</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Join the discussion and post comments on the Basic LTI Public Forum: <a href="/forums/ims-glc-public-forums-and-resources/lti-basic-lti-v10-and-beyond"> http://www.imsglobal.org/community/forum/categories.cfm?catid=44</a></p>
+	<p style="margin-left:2.0in;">&nbsp;</p>
+	<p>&nbsp;</p>
+	<div class="toc-item-anchor"><a name="toc-13"></a></div><h2 class=" toc-headings">List of Contributors</h2><div class="toc-top-links"><a href="/specs/ltiv1p0/implementation-guide#table-of-contents">Move to top</a></div>
+	<p>The following individuals contributed to the authoring of this document:</p>
+</div>
+<br clear="all"><div>
+	<p>Hal Herzog &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Learning Objects</p>
+	<p>Greg McFall &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Pearson</p>
+	<p>Mark McKell &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1EdTech</p>
+	<p>Lance Neumann &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Blackboard</p>
+	<p>Charles Severance &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1EdTech</p>
+	<p>Colin Smythe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1EdTech</p>
+	<p>Bruno Van Haetsdaele &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Wimba</p>
+	<p>&nbsp;</p>
+</div>
+<br clear="all"><div>
+	<h1>Revision History</h1>
+	<p>&nbsp;</p>
+	<table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td style="width:115px;">
+					<p align="center"><strong>Version No.</strong></p>
+				</td>
+				<td style="width:144px;">
+					<p align="center"><strong>Release Date</strong></p>
+				</td>
+				<td style="width:365px;">
+					<p align="center"><strong>Comments</strong></p>
+				</td>
+			</tr><tr><td style="width:115px;">
+					<p>Base Document v1.0</p>
+				</td>
+				<td style="width:144px;">
+					<p>27 July 2009</p>
+				</td>
+				<td style="width:365px;">
+					<p>The first formal release of the Base Document.&nbsp; This document is released for review by the 1EdTech LTI Project Group.</p>
+				</td>
+			</tr><tr><td style="width:115px;">
+					<p>Internal Draft<br>
+						Final v1.0</p>
+				</td>
+				<td style="width:144px;">
+					<p>30 October 2009</p>
+				</td>
+				<td style="width:365px;">
+					<p>The first formal release of the Internal Draft document.&nbsp; This document is released for interoperability implementation by the 1EdTech Members and Affiliates.</p>
+				</td>
+			</tr><tr><td style="width:115px;">
+					<p>Public Draft v1.0</p>
+				</td>
+				<td style="width:144px;">
+					<p>15 February 2010</p>
+				</td>
+				<td style="width:365px;">
+					<p>The first formal release of the Public Draft.&nbsp; This document is released for interoperability adoption by the community at large.</p>
+				</td>
+			</tr><tr><td style="width:115px;">
+					<p>Final v1.0</p>
+				</td>
+				<td style="width:144px;">
+					<p>17 May 2010</p>
+				</td>
+				<td style="width:365px;">
+					<p>The first formal release of the Final specification. This document is released for public adoption.</p>
+				</td>
+			</tr><tr><td style="width:115px;">
+					<p>&nbsp;</p>
+				</td>
+				<td style="width:144px;">
+					<p>&nbsp;</p>
+				</td>
+				<td style="width:365px;">
+					<p>&nbsp;</p>
+				</td>
+			</tr></tbody></table><p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p>&nbsp;</p>
+	<p align="center"><em>1EdTech Consortium, Inc. (&ldquo;1EdTech&rdquo;) is publishing the information contained in this</em> 1EdTech Learning Tools Interoperability Basic LTI Implementation Guide <em>(&ldquo;Specification&rdquo;) for purposes of scientific, experimental, and scholarly collaboration only.</em></p>
+	<p align="center"><em>1EdTech makes no warranty or representation regarding the accuracy or completeness of the Specification. This material is provided on an &ldquo;As Is&rdquo; and &ldquo;As Available&rdquo; basis.</em></p>
+	<p align="center"><em>The Specification is at all times subject to change and revision without notice.</em></p>
+	<p align="center"><em>It is your sole responsibility to evaluate the usefulness, accuracy, and completeness of the Specification as it relates to you.</em></p>
+	<p align="center"><em>1EdTech would appreciate receiving your comments and suggestions.</em></p>
+	<p align="center"><em>Please contact 1EdTech through our website at <a href="/">http://www.imsglobal.org</a></em></p>
+	<p align="center"><em>Please refer to Document Name:</em> 1EdTech Learning Tools Interoperability Basic LTI Implementation Guide v1.0<br><em>Revision:</em> 17 May 2010</p>
+</div>
+<p>&nbsp;</p>
+</div></div></div>  </div>
+
+  
+</div>
+
+ </div></div>
+</div>
+
+  </div>
+      
+    </div>
+    <!--/End Content -->
+
+    <!--/Right Sidebar if populated -->
+        <!--/End Right Side Bar -->
+  </div>
+</div>
+</div>
+<!--/End Content and Side Bar -->
+
+<!--/Begin Feature 1  -->
+<!--/End Feature 1-->
+<!--/Begin Feature 2  -->
+<!--/End Feature 2-->
+<!--/Begin Feature 3  -->
+<!--/End Feature 3-->
+<!--/Begin Feature 3.1 -->
+<!--/End Feature 3-->
+<!--/Begin Feature 4  -->
+<!--/End Feature 4-->
+
+<!--/Begin Content Bottom Regions  -->
+      </div>
+    </div>
+  </div>
+</div>
+<!--/End Content Bottom Regions-->
+
+<!--/Begin Footer Columns  -->
+
+<div class="footer-4-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-3">   <div class="region region-footer-first">
+    <div id="block-menu-menu-footer-1" class="block block-menu ">
+        <div class="block-content-container"><div class="block-content"> <ul class="menu clearfix"><li class="first leaf"><a href="/aboutims.html">About 1EdTech</a></li>
+<li class="leaf"><a href="/institutions.html" title="">Initiatives</a></li>
+<li class="leaf"><a href="/leadershipactivities" title="">Leadership Activities</a></li>
+<li class="leaf"><a href="https://www.1edtech.org/about/1edtech" title="">Collaborations and Affiliations</a></li>
+<li class="last leaf"><a href="https://www.1edtech.org/about/news" title="">News</a></li>
+</ul> </div></div>
+</div>
+
+  </div>
+ </div>
+            <div class="col-sm-3">   <div class="region region-footer-second">
+    <div id="block-menu-menu-footer-2" class="block block-menu ">
+        <div class="block-content-container"><div class="block-content"> <ul class="menu clearfix"><li class="first leaf"><a href="https://www.1edtech.org/events" title="">Leadership Institute</a></li>
+<li class="leaf"><a href="/lili/awards.html">Learning Impact Awards</a></li>
+<li class="leaf"><a href="https://www.1edtech.org/blog" title="">Learning Impact Blog</a></li>
+<li class="leaf"><a href="/IMSLeadershipAwards.html">Leadership Awards</a></li>
+<li class="last leaf"><a href="/william-h-bill-graves-leadership-award">William H. (Bill) Graves Leadership Award</a></li>
+</ul> </div></div>
+</div>
+
+  </div>
+ </div>
+            <div class="col-sm-3">   <div class="region region-footer-third">
+    <div id="block-menu-menu-footer-3" class="block block-menu ">
+        <div class="block-content-container"><div class="block-content"> <ul class="menu clearfix"><li class="first leaf"><a href="/developers" title="">Technical Activities </a></li>
+<li class="leaf"><a href="/cc/statuschart.cfm" title="">Product Directory</a></li>
+<li class="leaf"><a href="/specifications.html">Download Standards</a></li>
+<li class="leaf"><a href="/technical-resources" title="">Technical Resources Search</a></li>
+<li class="last leaf"><a href="https://community.1edtech.org" title="">Forums</a></li>
+</ul> </div></div>
+</div>
+
+  </div>
+ </div>
+            <div class="col-sm-3">   <div class="region region-footer-fourth">
+    <div id="block-menu-menu-footer-4" class="block block-menu ">
+        <div class="block-content-container"><div class="block-content"> <ul class="menu clearfix"><li class="first leaf"><a href="/membersandaffiliates.html">Members</a></li>
+<li class="leaf"><a href="/careers">Career Opportunities</a></li>
+<li class="last leaf"><a href="/contactus.cfm">Contact Us</a></li>
+</ul> </div></div>
+</div>
+
+  </div>
+ </div>
+          </div>
+  </div>
+</div>
+<!--/End Footer Columns-->
+
+<!--/Begin Footer Columns  -->
+<div class="footer-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">   <div class="region region-footer-bottom">
+    <div id="block-block-1" class="block block-block ">
+        <div class="block-content-container"><div class="block-content"> <p>The names 1EdTech<sup>&reg;</sup>&nbsp;and IMS Global Learning Consortium<sup>&reg;</sup>, the 1EdTech logos, Better Learning From Better Learning Technology<sup>&reg;</sup>, TrustEd Apps&trade;, 1EdTech TrustEd Apps&trade;, Learning Tools Interoperability<sup>&reg;</sup>, LTI<sup>&reg;</sup>, IMS LTI<sup>&reg;</sup>, IMS Learning Tools Interoperability<sup>&reg;</sup>, OneRoster<sup>&reg;</sup>, Caliper Analytics<sup>&reg;</sup>, Question &amp; Test Interoperability&nbsp;(QTI)<sup>&reg;</sup>, QTI<sup>&reg;</sup>, Common Cartridge<sup>&reg;</sup>,&nbsp;Competencies and Academic Standards Exchange<sup>&reg;</sup>, CASE<sup>&reg;</sup>,&nbsp;Competencies and Academic Standards Exchange&nbsp;(CASE)<sup>&reg;</sup>, Accessible Portable Item Protocol (APIP)<sup>&reg;</sup>, AccessForAll<sup>&reg;</sup>, Badge Connect<sup>&reg;</sup>, Comprehensive Learner Record Standard&trade;, and CLR Standard&trade; are trademarks of 1EdTech Consortium, Inc. in the United States and/or other countries. All other trademarks and registered trademarks are the properties of their respective owners.</p>
+
+<p>For information on the 1EdTech trademark usage policy, see our&nbsp;<a href="https://www.1edtech.org/about/legal">trademark policy page</a>.</p>
+
+<p style="text-align: center;"><a href="https://www.linkedin.com/company/1edtech-consortium-inc/"><img alt="Connect on LinkedIn" src="/sites/default/files/LI-In-Bug.png" style="width: 41px; height: 35px; margin: 5px 10px;" /></a><a href="https://www.twitter.com/LearningImpact"><img alt="X logo" src="/sites/default/files/logo-black.png" style="width: 35px; height: 36px;" /></a>&nbsp;<a href="https://www.youtube.com/c/1EdTechOrg"><img alt="View 1EdTech on YouTube" src="/sites/default/files/yt_icon_rgb.png" style="width: 50px; height: 35px; margin: 5px 10px;" /></a></p>
+ </div></div>
+</div>
+
+  </div>
+ </div>
+          </div>
+  </div>
+</div>
+<!--/End Footer Columns-->
+
+<!--/Begin Footer Columns  -->
+<div class="final-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">   <div class="region region-footer-final">
+    <div id="block-block-6" class="block block-block ">
+        <div class="block-content-container"><div class="block-content"> <p><a href="https://www.1edtech.org/about/legal">&copy; 2001-2023 1EdTech Consortium Inc.</a> All Rights Reserved. <a href="https://www.1edtech.org/about/legal/privacy">Privacy Policy</a></p>
+ </div></div>
+</div>
+
+  </div>
+ </div>
+          </div>
+  </div>
+</div>
+<!--/End Footer Columns-->
+</body>
+</html>
