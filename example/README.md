@@ -62,7 +62,7 @@ enough to demonstrate every check this harness exercises. A real deployment shou
 
 Neither app renders anything beyond hidden `<input>` fields and a plain HTML form - no
 `<script>` tag, no auto-submit. A generic library cannot know a consuming application's
-Content-Security-Policy (myON's, for instance, requires a `nonce` on every script tag), so
+Content-Security-Policy (some require a `nonce` on every script tag), so
 `BasicLti1\LaunchRequest` only ever hands back data, and turning it into markup - auto-submitting
 or not - is left to whoever is actually deploying it. This harness's own submit button follows
 that same boundary on purpose, rather than special-casing itself.

@@ -9,8 +9,8 @@ namespace BasicLti1;
  *
  * Deliberately holds data only, not markup. Basic LTI's own examples submit a launch as an
  * auto-submitting HTML form, but rendering one here would bake this library's opinion of a
- * `<script>` tag into every consumer, including one - like myON - whose Content-Security-Policy
- * requires a nonce on every script tag that this library has no way to know. Turning
+ * `<script>` tag into every consumer, including one whose Content-Security-Policy requires a
+ * nonce on every script tag that this library has no way to know. Turning
  * `$parameters` into hidden form fields is the consuming application's job.
  */
 final class LaunchRequest {
