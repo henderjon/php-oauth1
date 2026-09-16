@@ -36,23 +36,28 @@ use Psr\Log\NullLogger;
  *
  * `oauth_consumer_key` is taken straight from the incoming, not-yet-validated request and is
  * unbounded in length until it has been checked against `$credentials->consumerKey`. Only the
- * copy that goes into a *log line* is length-capped (`loggableConsumerKey()`, the same way
- * Oidc\AuthorizationStateStore's own `loggableState()` caps `state` before it has been
- * validated) - both the value a security comparison runs against and the value
- * RequestVerificationException/SigningException actually carry stay full and untruncated.
- * Diverges from AuthorizationStateStore's own choice to cap what its exception carries too:
- * `state` there is a library-generated, opaque correlation token with no life beyond this
- * library's own state store, where a truncated copy loses nothing a caller could act on. A
- * consumer key is the caller's own business identifier - the caller looked up `$credentials`
- * by it before ever calling `verify()`, and might reasonably want to look something up by it
- * again after catching a failure (rate-limit a specific consumer, notify whoever owns it) -
- * handing back a silently-truncated key that no longer matches anything in the caller's own
- * store would be a functional bug hiding behind a security-sounding justification, not a
- * property of this decision worth having.
+ * copy that goes into a *log line* is length-capped (`loggableConsumerKey()`) - both the value a
+ * security comparison runs against and the value RequestVerificationException/SigningException
+ * actually carry stay full and untruncated. Handing back a silently-truncated key that no
+ * longer matches anything in the caller's own store, after the caller looked up `$credentials`
+ * by that same key before ever calling `verify()`, would be a functional bug hiding behind a
+ * security-sounding justification, not a property worth having - a caller may reasonably want
+ * the real value after catching a failure, to rate-limit a specific consumer or notify whoever
+ * owns it.
+ *
+ * The cap itself (MAX_LOGGED_CONSUMER_KEY_LENGTH) is 255, not the 64 Oidc\AuthorizationStateStore
+ * uses for its own `state` - deliberately not copied without checking why 64 was right there.
+ * `state` is a value that library generates itself (`bin2hex(random_bytes(16))` by default, 32
+ * hex characters), so 64 is a safety margin over a length the library actually controls. RFC
+ * 5849 places no length limit on `oauth_consumer_key` at all, and this library never generates
+ * one - it is assigned by whoever registers a Tool Consumer, the same kind of externally
+ * assigned, unbounded-until-validated value as an OIDC callback's own `error`/
+ * `error_description` (`Oidc\IncomingAuthorizationResponse::MAX_ERROR_FIELD_LENGTH`, also 255),
+ * not `state`.
  */
 final class RequestVerifier {
 
-	private const MAX_LOGGED_CONSUMER_KEY_LENGTH = 64;
+	private const MAX_LOGGED_CONSUMER_KEY_LENGTH = 255;
 
 	public function __construct(
 		private readonly VerifierInterface $verifier,
@@ -160,7 +165,12 @@ final class RequestVerifier {
 			// this class's own docblock, never what a caller actually receives.
 			$rewrapped = new SigningException($exception->getMessage(), $consumerKey, $exception);
 
-			$this->logger->error('oauth1.signing_failed', [
+			// 'oauth1.verifying_failed', not 'oauth1.signing_failed' - this happens on the
+			// verifying side, and a consumer filtering log events by name on "which side had a
+			// broken key/base string" should not see the two conflated under a name that reads
+			// as sign-side specific. RequestSigner's matching catch block is the one place that
+			// legitimately logs 'oauth1.signing_failed' for this same exception type.
+			$this->logger->error('oauth1.verifying_failed', [
 				'consumer_key' => $this->loggableConsumerKey($consumerKey),
 				'exception' => $rewrapped,
 				'security_relevant' => false,

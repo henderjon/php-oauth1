@@ -111,7 +111,7 @@ class RsaSha1Test extends TestCase {
 		} catch ( SigningException $exception ) {
 			$errors = $logger->recordsAt('error');
 			$this->assertCount(1, $errors);
-			$this->assertSame('oauth1.signing_failed', $errors[0]['message']);
+			$this->assertSame('oauth1.verifying_failed', $errors[0]['message']);
 			$this->assertFalse($errors[0]['context']['security_relevant']);
 			$this->assertSame('key', $exception->getConsumerKey());
 			$this->assertSame('(no PEM header found)', $errors[0]['context']['public_key_pem_header']);

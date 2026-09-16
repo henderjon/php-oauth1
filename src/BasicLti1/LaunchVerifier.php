@@ -35,7 +35,11 @@ use Psr\Log\NullLogger;
  */
 final class LaunchVerifier {
 
-	private const MAX_LOGGED_RESOURCE_LINK_ID_LENGTH = 64;
+	// 255, not the 64 Oauth1\RequestVerifier's own MAX_LOGGED_CONSUMER_KEY_LENGTH uses for a
+	// different reason entirely - see that constant's docblock. resource_link_id has no spec
+	// length limit and is assigned by whoever owns the Tool Consumer's resource, not generated
+	// by this library.
+	private const MAX_LOGGED_RESOURCE_LINK_ID_LENGTH = 255;
 
 	public function __construct(
 		private readonly RequestVerifier $requestVerifier,

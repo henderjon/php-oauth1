@@ -161,8 +161,9 @@ class RequestVerifierTest extends TestCase {
 		$this->assertSame($overlong, $exception->getConsumerKey());
 
 		$errors = $logger->recordsAt('error');
-		$this->assertLessThan(strlen($overlong), strlen((string) $errors[0]['context']['consumer_key']));
-		$this->assertStringEndsWith('...(truncated)', $errors[0]['context']['consumer_key']);
+		// The cut itself is 255, not the 64 Oidc\AuthorizationStateStore uses for its own
+		// state - see this class's own docblock for why the two warrant different caps.
+		$this->assertSame(str_repeat('a', 255) . '...(truncated)', $errors[0]['context']['consumer_key']);
 	}
 
 	public function testVerifyRejectsAnUnsupportedSignatureMethod(): void {
@@ -202,7 +203,7 @@ class RequestVerifierTest extends TestCase {
 		} catch ( SigningException $exception ) {
 			$errors = $logger->recordsAt('error');
 			$this->assertCount(1, $errors);
-			$this->assertSame('oauth1.signing_failed', $errors[0]['message']);
+			$this->assertSame('oauth1.verifying_failed', $errors[0]['message']);
 			$this->assertFalse($errors[0]['context']['security_relevant']);
 
 			// See RequestSignerTest's matching test for why this is rewrapped, not rethrown

@@ -573,10 +573,14 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
         Separately, <code>oauth_consumer_key</code> (in <code>RequestVerifier</code>) and
         <code>resource_link_id</code> (in <code>LaunchVerifier</code>) are taken straight from an
         incoming, not-yet-validated request and are unbounded in length until checked - both are
-        capped at 64 characters (<code>Truncate::to()</code>, a byte-for-byte port of
-        <code>Oidc\Truncate</code>) before appearing in any <em>log line</em>, the same way
-        <code>Oidc\AuthorizationStateStore</code> caps an incoming <code>state</code> before it
-        has been validated. Neither the value a security comparison runs against nor the value
+        capped at 255 characters (<code>Truncate::to()</code>, UTF-8-safe unlike
+        <code>Oidc\Truncate</code>'s own byte-based cut - see <code>Truncate</code>'s docblock)
+        before appearing in any <em>log line</em>. 255 matches
+        <code>Oidc\IncomingAuthorizationResponse::MAX_ERROR_FIELD_LENGTH</code>'s own reasoning,
+        not <code>Oidc\AuthorizationStateStore</code>'s 64 - see <code>RequestVerifier</code>'s
+        own docblock for why a value this library never generates itself, with no spec length
+        limit, warrants a different cap than a value the library generates and bounds itself.
+        Neither the value a security comparison runs against nor the value
         <code>RequestVerificationException</code>/<code>SigningException</code> actually carries
         is ever capped - capping the comparison value would let a long-enough forged key collide
         with a truncated legitimate prefix, and capping what an exception hands back to calling

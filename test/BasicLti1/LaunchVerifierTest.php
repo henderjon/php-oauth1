@@ -154,9 +154,9 @@ class LaunchVerifierTest extends TestCase {
 
 		$this->verifier($clock, $logger)->verify('http://example.com/launch', $credentials, $parameters);
 
+		// The cut itself is 255 - see LaunchVerifier's own constant for why.
 		$debug = $logger->recordsAt('debug');
-		$this->assertLessThan(strlen($overlong), strlen($debug[0]['context']['resource_link_id']));
-		$this->assertStringEndsWith('...(truncated)', $debug[0]['context']['resource_link_id']);
+		$this->assertSame(str_repeat('a', 255) . '...(truncated)', $debug[0]['context']['resource_link_id']);
 	}
 
 	public function testVerifyThrowsForAnInvalidMessageTypeOnceSignatureChecksOut(): void {
