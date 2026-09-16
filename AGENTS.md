@@ -128,13 +128,19 @@ its own class.
 
 ## Documentation
 
-- `docs/index.html` is the rendered public API reference (served via GitHub Pages from `dev`), once one exists here
-  - see `php-oidc`'s copy for the format to follow. Keep it in sync with any change to the public API in the same
-  change, not a follow-up: a new class, interface, method, constructor parameter, `with*()` wither, enum case, or
-  exception type all need a matching update there.
-- It documents the public surface only. Internal collaborators (the signature base string builder, the per-method
-  signers, the body-hash signer, the request verifier, and similar) are deliberately excluded - see `php-oidc`'s
-  copy of the page footer for the reasoning.
+- `docs/index.html` is the rendered public API reference (served via GitHub Pages from `dev`), styled and structured
+  after `php-oidc`'s own copy (same CSS, same `type-section`/`method-sig`/index/footer conventions).
+- **Every commit that touches `src/` must leave `docs/index.html` in sync in that same commit, never a follow-up.**
+  This is not limited to "public API changes" as a judgment call - treat it as unconditional: a new class,
+  interface, method, constructor parameter, `with*()` wither, enum case, exception type, or a changed docblock
+  rationale worth surfacing all need a matching update there before the commit is done. A commit that changes
+  `src/` and does not touch `docs/index.html` should be treated as incomplete unless the change is purely internal
+  (see the exclusion list below) - and even then, double-check rather than assume.
+- It documents the public surface only. Internal collaborators - the signature base string builder
+  (`SignatureBaseString`), the percent-encoding helper (`PercentEncoding`), and `NonceStore` (which wraps a PSR-16
+  cache the same way `php-oidc`'s `AuthorizationStateStore` does) - are deliberately excluded. Everything else
+  under `Oauth1\`, `Oauth1\Exceptions\`, `BasicLti1\`, and `BasicLti1\Exceptions\` is documented, including the
+  factories, both signer/verifier interfaces and their concrete implementations, and every value object and enum.
 
 ## Git
 

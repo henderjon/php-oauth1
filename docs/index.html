@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#4F5B93">
+  <title>php-oauth1 - Package Documentation</title>
+  <style>
+    /* Base */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      line-height: 1.3;
+      text-align: center;
+      color: #222;
+    }
+
+    pre, code {
+      font-family: Menlo, monospace;
+      font-size: 0.875rem;
+    }
+
+    pre {
+      line-height: 1.4;
+      overflow-x: auto;
+      background: #efefef;
+      padding: 0.625rem;
+      border-radius: 0.3125rem;
+      margin: 1.25rem;
+      text-align: left;
+    }
+
+    pre .comment { color: #006600; }
+    pre .highlight { background: #ffff00; }
+
+    /* Typography */
+    h1, h2, h3, h4 {
+      margin: 1.25rem 0;
+      color: #4F5B93;
+      font-weight: bold;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      line-height: 1;
+    }
+
+    h1 .text-muted { color: #777; }
+
+    h2 {
+      font-size: 1.25rem;
+      background: #ece9f5;
+      padding: 0.5rem;
+      line-height: 1.25;
+      font-weight: normal;
+      overflow-wrap: break-word;
+      clear: right;
+    }
+
+    h2 a { font-weight: bold; }
+
+    /* Section permalinks */
+    .section-anchor {
+      opacity: 0;
+      margin-left: 0.5rem;
+      font-weight: normal;
+      text-decoration: none;
+    }
+
+    h2:hover .section-anchor,
+    h3:hover .section-anchor,
+    .section-anchor:focus {
+      opacity: 1;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      line-height: 1.25;
+      overflow-wrap: break-word;
+      margin: 1.25rem 0.3125rem;
+    }
+
+    h4 {
+      font-size: 1rem;
+      margin: 1.25rem 0.3125rem;
+    }
+
+    /* Links */
+    a {
+      color: #4F5B93;
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .container {
+      text-align: left;
+      padding: 0 1.25rem;
+      max-width: 59.38rem;
+      margin: 0;
+    }
+
+    p, li {
+      max-width: 50rem;
+      word-wrap: break-word;
+    }
+
+    p, ul, ol, dl { margin: 1.25rem; }
+    dd { margin: 0 0 0 1.25rem; }
+    dl, dd { font-size: 0.875rem; }
+
+    /* Topbar */
+    #topbar {
+      background: #ece9f5;
+      height: 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+    }
+
+    .top-heading {
+      font-size: 1.25rem;
+    }
+
+    .top-heading a {
+      color: #222;
+      text-decoration: none;
+    }
+
+    .top-nav a { margin-left: 1rem; }
+
+    /* Buttons */
+    .button {
+      padding: 0.625rem;
+      font-size: 1rem;
+      border-radius: 0.3125rem;
+      border: 1px solid #4F5B93;
+      display: inline-block;
+      margin: 0.3125rem 0.125rem;
+      text-decoration: none;
+    }
+
+    .button-primary {
+      color: white;
+      background: #4F5B93;
+    }
+
+    .button-secondary {
+      color: #222;
+      background: #ece9f5;
+    }
+
+    .button:hover { opacity: 0.9; }
+
+    /* Tables */
+    table {
+      border-collapse: collapse;
+      margin: 1.25rem;
+      width: calc(100% - 2.5rem);
+    }
+
+    table td, table th {
+      padding: 0.625rem;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    table th {
+      background: #ece9f5;
+      color: #4F5B93;
+    }
+
+    table td code, table th code { white-space: nowrap; }
+
+    /* Alerts */
+    .alert { color: #aa0000; }
+
+    .alert-box {
+      background: #f9f9be;
+      padding: 0.625rem;
+      text-align: left;
+      border-radius: 0.3125rem;
+      margin: 1.25rem;
+    }
+
+    .alert-box strong { color: #aa0000; }
+
+    /* Footer */
+    #footer {
+      text-align: left;
+      color: #666;
+      font-size: 0.875rem;
+      margin: 2.5rem 0;
+      max-width: 59.38rem;
+      padding: 0 1.25rem;
+    }
+
+    /* Index */
+    .index-columns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0 2.5rem;
+      margin: 1.25rem;
+    }
+
+    .index-columns > div { flex: 1 1 15rem; }
+
+    .index-columns h4 {
+      margin: 1.25rem 0 0.3125rem 0;
+      color: #666;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .index-columns ul {
+      margin: 0 0 0.5rem 0;
+      padding-left: 1.1rem;
+      list-style: none;
+    }
+
+    .index-columns li { margin: 0.2rem 0; }
+
+    .kind-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-family: Menlo, monospace;
+      color: #666;
+      background: #efefef;
+      border-radius: 0.25rem;
+      padding: 0 0.3rem;
+      margin-right: 0.3rem;
+    }
+
+    /* Section separation */
+    .type-section {
+      border-top: 1px solid #e5e5e5;
+      padding-top: 0.5rem;
+    }
+
+    .method-sig {
+      background: #efefef;
+      border-radius: 0.3125rem;
+      padding: 0.625rem;
+      margin: 0.75rem 1.25rem 0.5rem 1.25rem;
+      font-family: Menlo, monospace;
+      font-size: 0.875rem;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    .throws-list {
+      font-size: 0.875rem;
+    }
+
+    .back-to-index {
+      font-size: 0.8rem;
+    }
+
+    /* Toggle/Collapse */
+    .toggleButton,
+    .exampleHeading { cursor: pointer; }
+
+    .exampleHeading .text { color: #4F5B93; }
+
+    .toggle > .collapsed,
+    .toggleVisible > .expanded { display: block; }
+
+    .toggle > .expanded,
+    .toggleVisible > .collapsed { display: none; }
+
+    /* Responsive */
+    @media (max-width: 43.75em) {
+      body { font-size: 0.9375rem; }
+      pre, code { font-size: 0.866rem; }
+      .container, #footer { padding: 0 0.625rem; }
+      p, pre, ul, ol { margin: 0.625rem; }
+      .index-columns { gap: 0 1.25rem; }
+    }
+
+    @media print {
+      #topbar { display: none !important; }
+      h2 {
+        background-color: #ece9f5 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="topbar">
+    <div class="top-heading">
+      <a href="#overview">henderjon/php-oauth1</a>
+    </div>
+    <div class="top-nav">
+      <a href="#index">Index</a>
+      <a href="https://github.com/henderjon/php-oauth1">GitHub</a>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- OVERVIEW -->
+    <div id="overview">
+      <h1>Package Oauth1 / BasicLti1</h1>
+      <p>
+        A small, dependency-light <a href="https://www.rfc-editor.org/rfc/rfc5849">OAuth 1.0 (RFC 5849)</a>
+        request signing and verification library for PHP, covering both sides of a request - the
+        <em>signer</em> role and the <em>verifier</em> role - rather than only the client half most
+        remaining OAuth 1.0 libraries assume. A companion namespace, <code>BasicLti1</code>, layers
+        Basic LTI 1.0/1.1 tool-launch construction and verification on top of it.
+      </p>
+      <p>
+        Most remaining uses of OAuth 1.0 are not a full three-legged authorization dance against a
+        public API - they are a fixed pair of parties (a Learning Management System and a tool,
+        most often) signing one-legged, no-token requests to prove who sent them. This library
+        targets that case well, rather than chasing every OAuth 1.0 provider's own quirks.
+      </p>
+      <div class="alert-box">
+        <strong>Scope.</strong> <code>BasicLti1</code> covers Basic LTI 1.0/1.1 launches only - the
+        protocol did not change between those two versions. It deliberately stops short of LTI
+        1.1's Basic Outcomes Service and its <code>oauth_body_hash</code> extension (signing a
+        POX/XML body instead of form parameters), which needs more design thought before it is
+        added.
+      </div>
+
+      <a href="#QuickStart" class="button button-primary">Quick Start</a>
+      <a href="#index" class="button button-secondary">Browse the Index</a>
+
+      <h3>Installation</h3>
+      <pre>composer require henderjon/php-oauth1</pre>
+    </div>
+
+    <!-- QUICK START: BASIC LTI -->
+    <div id="QuickStart" class="toggleVisible">
+      <div class="collapsed">
+        <h2 class="toggleButton">▹ Quick Start: a Basic LTI launch</h2>
+      </div>
+      <div class="expanded">
+        <h2 class="toggleButton">▾ Quick Start: a Basic LTI launch</h2>
+        <p>The common case this library exists for: an LMS (Tool Consumer) signing a launch, and a tool (Tool Provider) verifying it.</p>
+        <pre>&lt;?php
+
+use BasicLti1\LaunchRequestBuilderFactory;
+use BasicLti1\LaunchVerifierFactory;
+use Oauth1\Credentials;
+
+<span class="comment">// Agreed on out of band, ahead of time, by both parties.</span>
+$credentials = new Credentials('consumer-key', 'consumer-secret');
+
+<span class="comment">// Tool Consumer side - building a launch.</span>
+$launch = (new LaunchRequestBuilderFactory())-&gt;make()-&gt;build(
+    'https://tool.example.com/launch',
+    $credentials,
+    [
+        'resource_link_id' =&gt; 'link-1',
+        'user_id' =&gt; 'user-42',
+        'roles' =&gt; 'Instructor',
+    ],
+);
+
+<span class="comment">// $launch-&gt;parameters is a flat array&lt;string,string&gt; - render every entry as
+// a hidden form field and submit. See LaunchRequest below for why this
+// library stops there instead of rendering markup itself.</span>
+
+<span class="comment">// Tool Provider side - verifying an incoming launch.</span>
+(new LaunchVerifierFactory())-&gt;make($psr16NonceCache)-&gt;verify(
+    'https://tool.example.com/launch',
+    $credentials,
+    $_POST,
+);
+
+<span class="comment">// No exception means the signature, timestamp, nonce, and required Basic
+// LTI parameters all checked out.</span></pre>
+        <p>
+          See the <a href="https://github.com/henderjon/php-oauth1/tree/dev/example">example/</a>
+          directory for a runnable version of both sides of this, driven over real HTTP with
+          PHP's built-in dev server - including a deliberate replay and a deliberate tamper, and
+          what each one looks like once rejected.
+        </p>
+      </div>
+    </div>
+
+    <!-- QUICK START: RAW OAUTH1 -->
+    <div id="QuickStartOauth1" class="toggle">
+      <div class="collapsed">
+        <h2 class="toggleButton">▹ Quick Start: raw OAuth 1.0 signing</h2>
+      </div>
+      <div class="expanded">
+        <h2 class="toggleButton">▾ Quick Start: raw OAuth 1.0 signing</h2>
+        <p>The <code>Oauth1</code> namespace works standalone too, for anything else that still speaks OAuth 1.0.</p>
+        <pre>&lt;?php
+
+use Oauth1\Credentials;
+use Oauth1\RequestSignerFactory;
+use Oauth1\RequestVerifierFactory;
+use Oauth1\SignatureMethod;
+
+$credentials = new Credentials('consumer-key', 'consumer-secret');
+
+$signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
+    -&gt;sign('POST', 'https://api.example.com/resource', $credentials, [ 'foo' =&gt; 'bar' ]);
+
+<span class="comment">// $signed-&gt;oauthParameters holds every oauth_* parameter, including
+// oauth_signature - merge them into the request body, query string, or an
+// Authorization header via $signed-&gt;authorizationHeaderValue().</span>
+
+(new RequestVerifierFactory())-&gt;forMethod(SignatureMethod::HmacSha1, $psr16NonceCache)
+    -&gt;verify('POST', 'https://api.example.com/resource', $credentials, $incomingParameters);</pre>
+      </div>
+    </div>
+
+    <!-- INDEX -->
+    <div id="index">
+      <h2>Index<a class="section-anchor" href="#index" aria-label="Link to this section">&para;</a></h2>
+      <div class="index-columns">
+        <div>
+          <h4>Oauth1 &mdash; Signing</h4>
+          <ul>
+            <li><a href="#RequestSignerFactory">RequestSignerFactory</a></li>
+            <li><a href="#RequestSigner">RequestSigner</a></li>
+            <li><a href="#Credentials">Credentials</a></li>
+            <li><a href="#SignatureMethod">SignatureMethod</a></li>
+            <li><a href="#SignedRequest">SignedRequest</a></li>
+          </ul>
+          <h4>Oauth1 &mdash; Verifying</h4>
+          <ul>
+            <li><a href="#RequestVerifierFactory">RequestVerifierFactory</a></li>
+            <li><a href="#RequestVerifier">RequestVerifier</a></li>
+            <li><a href="#VerificationFailureReason">VerificationFailureReason</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Oauth1 &mdash; Signature methods</h4>
+          <ul>
+            <li><a href="#SignerVerifierInterface">SignerInterface / VerifierInterface</a></li>
+            <li><a href="#HmacSha1Signer">HmacSha1Signer</a></li>
+            <li><a href="#PlaintextSigner">PlaintextSigner</a></li>
+            <li><a href="#RsaSha1Signer">RsaSha1Signer</a></li>
+            <li><a href="#RsaSha1Verifier">RsaSha1Verifier</a></li>
+          </ul>
+          <h4>Oauth1 &mdash; Supporting</h4>
+          <ul>
+            <li><a href="#NonceGenerator">NonceGeneratorInterface / RandomNonceGenerator</a></li>
+            <li><a href="#CurrentClock">CurrentClock</a></li>
+          </ul>
+          <h4>Oauth1 &mdash; Exceptions</h4>
+          <ul>
+            <li><a href="#Oauth1Exceptions">Oauth1\Exceptions\*</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>BasicLti1 &mdash; Launching</h4>
+          <ul>
+            <li><a href="#LaunchRequestBuilderFactory">LaunchRequestBuilderFactory</a></li>
+            <li><a href="#LaunchRequestBuilder">LaunchRequestBuilder</a></li>
+            <li><a href="#LaunchRequest">LaunchRequest</a></li>
+          </ul>
+          <h4>BasicLti1 &mdash; Verifying</h4>
+          <ul>
+            <li><a href="#LaunchVerifierFactory">LaunchVerifierFactory</a></li>
+            <li><a href="#LaunchVerifier">LaunchVerifier</a></li>
+            <li><a href="#LaunchValidationFailureReason">LaunchValidationFailureReason</a></li>
+          </ul>
+          <h4>BasicLti1 &mdash; Reference</h4>
+          <ul>
+            <li><a href="#Launch">Launch</a></li>
+          </ul>
+          <h4>BasicLti1 &mdash; Exceptions</h4>
+          <ul>
+            <li><a href="#BasicLti1Exceptions">BasicLti1\Exceptions\*</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- TERMINOLOGY -->
+    <div id="Terminology">
+      <h3>Terminology</h3>
+      <p>OAuth 1.0's own generic names, and what Basic LTI calls the same roles instead. Here because the two vocabularies genuinely differ, not just in spelling.</p>
+      <table>
+        <thead><tr><th>OAuth 1.0 term</th><th>Basic LTI term</th><th>In practice</th></tr></thead>
+        <tbody>
+          <tr><td>client</td><td>Tool Consumer (TC)</td><td>The LMS launching into a tool - the signer role, <a href="#RequestSigner"><code>RequestSigner</code></a> / <a href="#LaunchRequestBuilder"><code>LaunchRequestBuilder</code></a>.</td></tr>
+          <tr><td>server</td><td>Tool Provider (TP)</td><td>The tool receiving the launch - the verifier role, <a href="#RequestVerifier"><code>RequestVerifier</code></a> / <a href="#LaunchVerifier"><code>LaunchVerifier</code></a>.</td></tr>
+          <tr><td>client credentials</td><td><code>oauth_consumer_key</code> / consumer secret</td><td>Shared credentials the TC and TP agree on ahead of time - <a href="#Credentials"><code>Credentials</code></a>.</td></tr>
+          <tr><td>token credentials</td><td>(unused)</td><td>Basic LTI is one-legged: no token request/authorization/exchange step at all. <code>Credentials::$token</code>/<code>$tokenSecret</code> stay empty.</td></tr>
+          <tr><td>resource owner</td><td>(no equivalent)</td><td>Basic LTI has no third-party-authorization redirect - the launch itself, signed with a shared secret, is the trust signal.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- REQUEST SIGNER FACTORY -->
+    <div class="type-section" id="RequestSignerFactory">
+      <h2>type RequestSignerFactory<a class="section-anchor" href="#RequestSignerFactory" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        Assembles a <a href="#RequestSigner"><code>RequestSigner</code></a> for one of the three RFC
+        5849 &sect;3.4 signature methods, from a shared clock, nonce generator, and logger - so a
+        caller wiring up one signer per integration never reaches for <code>new</code> on
+        <code>RequestSigner</code> or its collaborators itself.
+      </p>
+      <div class="method-sig">final class RequestSignerFactory {
+
+    public function __construct(
+        NonceGeneratorInterface $nonceGenerator = new RandomNonceGenerator,
+        Psr\Clock\ClockInterface $clock = new CurrentClock,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
+    )
+
+    public function forMethod(
+        SignatureMethod $method,
+        ?string $rsaPrivateKey = null,
+        string $rsaPassphrase = "",
+    ): RequestSigner
+
+}</div>
+      <h3 id="RequestSignerFactory.forMethod">forMethod<a class="section-anchor" href="#RequestSignerFactory.forMethod" aria-label="Link to this section">&para;</a></h3>
+      <p>
+        <code>$rsaPrivateKey</code> (a PEM-encoded RSA private key) is required, and used, only for
+        <code>SignatureMethod::RsaSha1</code> - throws <a href="#Oauth1Exceptions"><code>SigningException</code></a>
+        if omitted for that method. Ignored for <code>HmacSha1</code>/<code>Plaintext</code>, which
+        sign with <a href="#Credentials"><code>Credentials</code></a>' own consumer/token secrets
+        instead.
+      </p>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- REQUEST SIGNER -->
+    <div class="type-section" id="RequestSigner">
+      <h2>type RequestSigner<a class="section-anchor" href="#RequestSigner" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        Signs one outgoing request: assembles the <code>oauth_*</code> protocol parameters RFC 5849
+        &sect;3.1 requires, builds the signature base string (&sect;3.4.1) for HMAC-SHA1/RSA-SHA1,
+        and delegates the signature itself to the injected <code>SignerInterface</code> - so
+        choosing HMAC-SHA1, RSA-SHA1, or PLAINTEXT is a constructor argument, never a branch in
+        this class.
+      </p>
+      <div class="method-sig">final class RequestSigner {
+
+    public function __construct(
+        SignerInterface $signer,
+        NonceGeneratorInterface $nonceGenerator = new RandomNonceGenerator,
+        Psr\Clock\ClockInterface $clock = new CurrentClock,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
+    )
+
+    public function sign(
+        string $httpMethod,
+        string $url,
+        Credentials $credentials,
+        array $requestParameters = [],
+        ?string $callback = null,
+    ): SignedRequest
+
+}</div>
+      <h3 id="RequestSigner.sign">sign<a class="section-anchor" href="#RequestSigner.sign" aria-label="Link to this section">&para;</a></h3>
+      <p>
+        <code>$requestParameters</code> are the request's other, non-OAuth parameters (query string
+        and/or form body) - included in the signature base string per RFC 5849 &sect;3.4.1.3.1, but
+        never returned on the result; the caller already has them. <code>$callback</code> sets
+        <code>oauth_callback</code>, for a Temporary Credential Request (RFC 5849 &sect;2.1) -
+        omitted entirely otherwise, since it has no meaning on any other request.
+      </p>
+      <p>
+        <code>oauth_timestamp</code> and <code>oauth_nonce</code> are omitted for PLAINTEXT, per
+        &sect;3.1 and &sect;3.4.4 - PLAINTEXT uses neither.
+      </p>
+      <pre><span class="comment">// RFC 5849 &sect;3.1 / &sect;3.4.1.1's own worked example, reproduced by this
+// library's test suite byte for byte (the signature base string) and via an
+// independently cross-checked value (the signature itself - see
+// HmacSha1Signer below for why &sect;3.1's own printed signature does not
+// actually recompute).</span>
+$credentials = new Credentials(
+    consumerKey: '9djdj82h48djs9d2',
+    consumerSecret: 'j49sk3j29djd',
+    token: 'kkk9d7dh3k39sjv7',
+    tokenSecret: 'dh893hdasih9',
+);
+
+$signed = $signer-&gt;sign(
+    'POST',
+    'http://example.com/request?b5=%3D%253D&amp;a3=a&amp;c%40=&amp;a2=r%20b',
+    $credentials,
+    [ 'b5' =&gt; '=%3D', 'a3' =&gt; [ 'a', '2 q' ], 'c@' =&gt; '', 'a2' =&gt; 'r b', 'c2' =&gt; '' ],
+);
+
+$signed-&gt;oauthParameters['oauth_signature']; <span class="comment">// 'OB33pYjWAnf+xtOHN4Gmbdil168='</span></pre>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- CREDENTIALS -->
+    <div class="type-section" id="Credentials">
+      <h2>type Credentials<a class="section-anchor" href="#Credentials" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        The identifiers OAuth 1.0 attaches to a request: the consumer key and, once a token has
+        been issued, the token identifier. Does <em>not</em> carry RSA key material - RFC 5849
+        &sect;3.4.1 itself notes RSA-SHA1 "does not use the token shared-secret, or any provisioned
+        client shared-secret" at all. See <a href="#RsaSha1Signer"><code>RsaSha1Signer</code></a> /
+        <a href="#RsaSha1Verifier"><code>RsaSha1Verifier</code></a> for where a key pair lives
+        instead.
+      </p>
+      <div class="alert-box">
+        A Basic LTI launch is one-legged: no token exchange at all. <code>$token</code>/
+        <code>$tokenSecret</code> simply stay at their default, empty value.
+      </div>
+      <div class="method-sig">final class Credentials {
+
+    public function __construct(
+        public readonly string $consumerKey,
+        public readonly string $consumerSecret = "",
+        public readonly string $token = "",
+        public readonly string $tokenSecret = "",
+    )
+
+    public function withConsumerKey(string $consumerKey): self
+    public function withConsumerSecret(string $consumerSecret): self
+    public function withToken(string $token): self
+    public function withTokenSecret(string $tokenSecret): self
+
+}</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- SIGNATURE METHOD -->
+    <div class="type-section" id="SignatureMethod">
+      <h2>enum SignatureMethod<a class="section-anchor" href="#SignatureMethod" aria-label="Link to this section">&para;</a></h2>
+      <p>The three signature methods RFC 5849 &sect;3.4 defines. Backed by the exact string each puts in the <code>oauth_signature_method</code> protocol parameter.</p>
+      <div class="method-sig">enum SignatureMethod: string {
+    case HmacSha1 = 'HMAC-SHA1';
+    case RsaSha1 = 'RSA-SHA1';
+    case Plaintext = 'PLAINTEXT';
+}</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- SIGNED REQUEST -->
+    <div class="type-section" id="SignedRequest">
+      <h2>type SignedRequest<a class="section-anchor" href="#SignedRequest" aria-label="Link to this section">&para;</a></h2>
+      <p>The <code>oauth_*</code> protocol parameters <a href="#RequestSigner"><code>RequestSigner</code></a> produced for one request, including <code>oauth_signature</code> - never the request's other, non-OAuth parameters, which the caller already has.</p>
+      <div class="method-sig">final class SignedRequest {
+
+    public function __construct(
+        public readonly array $oauthParameters,
+    )
+
+    public function authorizationHeaderValue(?string $realm = null): string
+
+}</div>
+      <h3 id="SignedRequest.authorizationHeaderValue">authorizationHeaderValue<a class="section-anchor" href="#SignedRequest.authorizationHeaderValue" aria-label="Link to this section">&para;</a></h3>
+      <p>RFC 5849 &sect;3.5.1: the OAuth <code>Authorization</code> header value, each name and value encoded per &sect;3.6 and quoted.</p>
+      <pre>$signed-&gt;authorizationHeaderValue();
+<span class="comment">// OAuth oauth_consumer_key="0685bd9184jfhq22", oauth_signature="wOJIO9A2W5mFwDgiDvZbTSMK%2FPY%3D"</span>
+
+$signed-&gt;authorizationHeaderValue('Example');
+<span class="comment">// OAuth realm="Example", oauth_consumer_key="0685bd9184jfhq22", ...</span></pre>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- SIGNER/VERIFIER INTERFACE -->
+    <div class="type-section" id="SignerVerifierInterface">
+      <h2>interface SignerInterface / VerifierInterface<a class="section-anchor" href="#SignerVerifierInterface" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        One RFC 5849 &sect;3.4 signature method's signing/verifying half each.
+        <a href="#RequestSigner"><code>RequestSigner</code></a> and
+        <a href="#RequestVerifier"><code>RequestVerifier</code></a> depend on these, not a concrete
+        implementation, so choosing HMAC-SHA1 vs RSA-SHA1 vs PLAINTEXT is a constructor argument,
+        never a branch inside either class.
+      </p>
+      <div class="method-sig">interface SignerInterface {
+    public function method(): SignatureMethod;
+    public function sign(string $baseString, Credentials $credentials): string;
+}
+
+interface VerifierInterface {
+    public function method(): SignatureMethod;
+    public function verify(string $baseString, Credentials $credentials, string $signature): bool;
+}</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- HMAC SHA1 SIGNER -->
+    <div class="type-section" id="HmacSha1Signer">
+      <h2>type HmacSha1Signer<a class="section-anchor" href="#HmacSha1Signer" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        RFC 5849 &sect;3.4.2: HMAC-SHA1 over the signature base string, keyed by the consumer
+        secret and token secret (each percent-encoded per &sect;3.6) joined by <code>&amp;</code> -
+        present even when one side is empty, so a signing-only, one-legged request (no token
+        secret at all) still has a key of <code>secret&amp;</code>.
+      </p>
+      <div class="method-sig">final class HmacSha1Signer implements SignerInterface, VerifierInterface {
+    public function method(): SignatureMethod
+    public function sign(string $baseString, Credentials $credentials): string
+    public function verify(string $baseString, Credentials $credentials, string $signature): bool
+}</div>
+      <div class="alert-box">
+        RFC 5849 &sect;3.1's own worked example prints an <code>oauth_signature</code> value
+        (<code>bYT5CMsGcbgUdFHObYMEfcx6bsw=</code>) for the exact base string &sect;3.4.1.1 also
+        prints - but that value does not actually recompute. It is a documentation artifact
+        inherited from the original OAuth Core community spec, not a property of this
+        implementation. This library's tests use a value cross-checked independently against
+        Python's <code>hmac</code>/<code>hashlib</code> module instead of copying that number from
+        the RFC text.
+      </div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- PLAINTEXT SIGNER -->
+    <div class="type-section" id="PlaintextSigner">
+      <h2>type PlaintextSigner<a class="section-anchor" href="#PlaintextSigner" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        RFC 5849 &sect;3.4.4: no signature algorithm at all - <code>oauth_signature</code> is just
+        the consumer secret and token secret (each percent-encoded), joined by <code>&amp;</code>.
+      </p>
+      <div class="alert-box"><strong>MUST only be used over TLS.</strong> This class has no way to enforce that - whatever constructs a <code>PlaintextSigner</code> is the thing responsible for it.</div>
+      <div class="method-sig">final class PlaintextSigner implements SignerInterface, VerifierInterface {
+    public function method(): SignatureMethod
+    public function sign(string $baseString, Credentials $credentials): string
+    public function verify(string $baseString, Credentials $credentials, string $signature): bool
+}</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- RSA SHA1 SIGNER -->
+    <div class="type-section" id="RsaSha1Signer">
+      <h2>type RsaSha1Signer<a class="section-anchor" href="#RsaSha1Signer" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        RFC 5849 &sect;3.4.3: RSASSA-PKCS1-v1_5 over the signature base string, using SHA-1 and the
+        client's own RSA private key - never a shared secret.
+      </p>
+      <div class="method-sig">final class RsaSha1Signer implements SignerInterface {
+
+    public function __construct(
+        string $privateKey,
+        string $passphrase = "",
+    )
+
+    public function method(): SignatureMethod
+    public function sign(string $baseString, Credentials $credentials): string
+
+}</div>
+      <p>Throws <a href="#Oauth1Exceptions"><code>SigningException</code></a> if the private key cannot be read, or if <code>openssl_sign()</code> itself rejects the input.</p>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- RSA SHA1 VERIFIER -->
+    <div class="type-section" id="RsaSha1Verifier">
+      <h2>type RsaSha1Verifier<a class="section-anchor" href="#RsaSha1Verifier" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        The verifying half of RSA-SHA1 (RFC 5849 &sect;3.4.3): checks a signature against the
+        client's RSA <em>public</em> key. Deliberately a separate class from
+        <a href="#RsaSha1Signer"><code>RsaSha1Signer</code></a> - one key material never signs and
+        verifies through the same object, since a client is only ever issued its own private key.
+      </p>
+      <div class="method-sig">final class RsaSha1Verifier implements VerifierInterface {
+
+    public function __construct(
+        string $publicKey,
+    )
+
+    public function method(): SignatureMethod
+    public function verify(string $baseString, Credentials $credentials, string $signature): bool
+
+}</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- REQUEST VERIFIER FACTORY -->
+    <div class="type-section" id="RequestVerifierFactory">
+      <h2>type RequestVerifierFactory<a class="section-anchor" href="#RequestVerifierFactory" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        Assembles a <a href="#RequestVerifier"><code>RequestVerifier</code></a> for one of the three
+        RFC 5849 &sect;3.4 signature methods, from a shared clock and logger and a per-call nonce
+        cache - so a caller verifying requests never reaches for <code>new</code> on
+        <code>RequestVerifier</code>, <code>NonceStore</code>, or a concrete
+        <a href="#SignerVerifierInterface"><code>VerifierInterface</code></a> itself. (
+        <code>NonceStore</code> is an internal collaborator wired up here, not part of this
+        library's public surface to construct directly.)
+      </p>
+      <div class="method-sig">final class RequestVerifierFactory {
+
+    public function __construct(
+        Psr\Clock\ClockInterface $clock = new CurrentClock,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
+    )
+
+    public function forMethod(
+        SignatureMethod $method,
+        Psr\SimpleCache\CacheInterface $nonceCache,
+        string $cacheKeySuffix = "",
+        int $timestampToleranceSeconds = 300,
+        ?string $rsaPublicKey = null,
+    ): RequestVerifier
+
+}</div>
+      <h3 id="RequestVerifierFactory.forMethod">forMethod<a class="section-anchor" href="#RequestVerifierFactory.forMethod" aria-label="Link to this section">&para;</a></h3>
+      <p>
+        <code>$nonceCache</code> is a PSR-16 cache used to record which nonces have already been
+        seen, so a replayed request is rejected the second time - session storage is fine for a
+        single-server app; a load-balanced deployment needs something shared (Memcache, Redis)
+        injected here instead. <code>$rsaPublicKey</code> (a PEM-encoded RSA public key) is
+        required, and used, only for <code>SignatureMethod::RsaSha1</code>.
+      </p>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- REQUEST VERIFIER -->
+    <div class="type-section" id="RequestVerifier">
+      <h2>type RequestVerifier<a class="section-anchor" href="#RequestVerifier" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        Verifies one incoming request: recomputes its signature from the parameters the caller
+        already parsed and compares it, checks <code>oauth_version</code> when present, and - for
+        HMAC-SHA1/RSA-SHA1 - rejects a timestamp outside the configured tolerance or an
+        already-claimed nonce (RFC 5849 &sect;3.2, &sect;3.3).
+      </p>
+      <div class="alert-box">
+        Fail-closed: every failure throws <a href="#Oauth1Exceptions"><code>RequestVerificationException</code></a>
+        rather than returning <code>false</code> - a caller cannot accidentally treat "did not
+        check" the same as "checked and passed".
+      </div>
+      <div class="method-sig">final class RequestVerifier {
+
+    public function __construct(
+        VerifierInterface $verifier,
+        NonceStore $nonceStore,
+        Psr\Clock\ClockInterface $clock = new CurrentClock,
+        int $timestampToleranceSeconds = 300,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
+    )
+
+    public function verify(
+        string $httpMethod,
+        string $url,
+        Credentials $credentials,
+        array $parameters,
+    ): void
+
+}</div>
+      <h3 id="RequestVerifier.verify">verify<a class="section-anchor" href="#RequestVerifier.verify" aria-label="Link to this section">&para;</a></h3>
+      <p>
+        <code>$credentials</code> must already carry the consumer secret (and token secret, if any)
+        the caller looked up for the incoming <code>oauth_consumer_key</code> - this class does not
+        know how or where that lookup happens. <code>$parameters</code> is every parameter the
+        request carries, from every source RFC 5849 &sect;3.4.1.3.1 lists (URI query,
+        <code>Authorization</code> header minus <code>realm</code>, form-encoded body) - the
+        <code>oauth_*</code> ones included, already decoded to their original values.
+      </p>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- VERIFICATION FAILURE REASON -->
+    <div class="type-section" id="VerificationFailureReason">
+      <h2>enum VerificationFailureReason<a class="section-anchor" href="#VerificationFailureReason" aria-label="Link to this section">&para;</a></h2>
+      <p>Why <a href="#RequestVerifier"><code>RequestVerifier</code></a> rejected a request - attached to <a href="#Oauth1Exceptions"><code>RequestVerificationException</code></a> so a caller can branch on it without parsing the exception message.</p>
+      <div class="method-sig">enum VerificationFailureReason {
+    case MissingParameter;
+    case UnsupportedVersion;
+    case UnsupportedSignatureMethod;
+    case ConsumerKeyMismatch;
+    case TimestampOutOfWindow;
+    case NonceReplayed;
+    case InvalidSignature;
+}</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- NONCE GENERATOR -->
+    <div class="type-section" id="NonceGenerator">
+      <h2>interface NonceGeneratorInterface / type RandomNonceGenerator<a class="section-anchor" href="#NonceGenerator" aria-label="Link to this section">&para;</a></h2>
+      <p>Produces the <code>oauth_nonce</code> value RFC 5849 &sect;3.3 requires. Injectable so a test can assert against a fixed nonce instead of a random one.</p>
+      <div class="method-sig">interface NonceGeneratorInterface {
+    public function generate(): string;
+}
+
+final class RandomNonceGenerator implements NonceGeneratorInterface {
+    public function generate(): string
+}</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- CURRENT CLOCK -->
+    <div class="type-section" id="CurrentClock">
+      <h2>type CurrentClock<a class="section-anchor" href="#CurrentClock" aria-label="Link to this section">&para;</a></h2>
+      <p>The default clock for both factories - wraps the system clock via PSR-20's <code>ClockInterface</code>, so tests can inject a fixed one instead.</p>
+      <div class="method-sig">final class CurrentClock implements Psr\Clock\ClockInterface {
+    public function now(): \DateTimeImmutable
+}</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- OAUTH1 EXCEPTIONS -->
+    <div class="type-section" id="Oauth1Exceptions">
+      <h2>namespace Oauth1\Exceptions<a class="section-anchor" href="#Oauth1Exceptions" aria-label="Link to this section">&para;</a></h2>
+      <p>Every exception here extends <code>OAuth1Exception</code> (itself a plain <code>\RuntimeException</code>), so a caller that only wants one catch clause for "signing or verification failed" always has one available.</p>
+      <table>
+        <thead><tr><th>Exception</th><th>Thrown when</th><th>Carries</th></tr></thead>
+        <tbody>
+          <tr><td><code>OAuth1Exception</code></td><td>Base class for every exception below. Never thrown directly.</td><td>&mdash;</td></tr>
+          <tr><td><code>SigningException</code></td><td>A signer or verifier cannot even attempt a signature - a malformed URL with no scheme/host, an unreadable RSA key, or <code>openssl</code> itself rejecting the input.</td><td>&mdash;</td></tr>
+          <tr><td><code>RequestVerificationException</code></td><td>A request fails verification for any of the reasons <a href="#VerificationFailureReason"><code>VerificationFailureReason</code></a> lists.</td><td><code>getReason(): VerificationFailureReason</code></td></tr>
+        </tbody>
+      </table>
+      <div class="alert-box">Exception messages here are safe to log but are not written for end users.</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- LAUNCH REQUEST BUILDER FACTORY -->
+    <div class="type-section" id="LaunchRequestBuilderFactory">
+      <h2>type LaunchRequestBuilderFactory<a class="section-anchor" href="#LaunchRequestBuilderFactory" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        Assembles a <a href="#LaunchRequestBuilder"><code>LaunchRequestBuilder</code></a> wired to
+        HMAC-SHA1 - the Basic LTI Implementation Guide's own words: "TC and TP must support and use
+        the HMAC-SHA1 signing method" - so a caller never has an opportunity to wire up a signature
+        method Basic LTI does not allow.
+      </p>
+      <div class="method-sig">final class LaunchRequestBuilderFactory {
+
+    public function __construct(
+        Oauth1\RequestSignerFactory $signerFactory = new Oauth1\RequestSignerFactory,
+    )
+
+    public function make(): LaunchRequestBuilder
+
+}</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- LAUNCH REQUEST BUILDER -->
+    <div class="type-section" id="LaunchRequestBuilder">
+      <h2>type LaunchRequestBuilder<a class="section-anchor" href="#LaunchRequestBuilder" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        Builds one Basic LTI launch: sets <code>lti_message_type</code>/<code>lti_version</code>
+        (never left to the caller to get right or wrong), requires <code>resource_link_id</code>,
+        and signs the whole parameter set with the injected <code>Oauth1\RequestSigner</code>.
+      </p>
+      <div class="method-sig">final class LaunchRequestBuilder {
+
+    public function __construct(
+        Oauth1\RequestSigner $signer,
+    )
+
+    public function build(
+        string $launchUrl,
+        Oauth1\Credentials $credentials,
+        array $launchParameters,
+    ): LaunchRequest
+
+}</div>
+      <div class="alert-box">
+        <strong>oauth_callback is deliberately not signed.</strong> It is added to the launch as a
+        plain, unsigned parameter set to <code>about:blank</code> - not passed through
+        <code>RequestSigner</code>'s own <code>$callback</code> argument, and so not part of the
+        signature base string at all. The Basic LTI v1.0 Implementation Guide's own reference
+        launch example (Appendix B) includes <code>oauth_callback</code> as a submitted form field
+        but excludes it from the base string it signs, and that example's own printed
+        <code>oauth_signature</code> only reproduces when this class does the same. RFC 5849
+        &sect;3.4.1.3.1 would include it if strictly followed, but matching the spec's own worked
+        example - and the real Tool Consumers that copied it - is the more useful behavior for
+        interoperating with actual Basic LTI traffic. <a href="#LaunchVerifier"><code>LaunchVerifier</code></a>
+        makes the matching choice on the receiving side.
+      </div>
+      <pre><span class="comment">// Appendix B.5 of the Basic LTI v1.0 Implementation Guide, reproduced end to
+// end by this library's test suite: the exact consumer key, secret, nonce,
+// and timestamp the guide uses, signed by LaunchRequestBuilder, matches the
+// guide's own printed oauth_signature.</span>
+$launch = $builder-&gt;build(
+    'http://dr-chuck.com/ims/php-simple/tool.php',
+    new Credentials('12345', 'secret'),
+    [
+        'resource_link_id' =&gt; '120988f929-274612',
+        'user_id' =&gt; '292832126',
+        'roles' =&gt; 'Instructor',
+        <span class="comment">// ... context_id, lis_person_name_full, and so on</span>
+    ],
+);
+
+$launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3NwmtLt0nDMP1G1zG30U='</span></pre>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- LAUNCH REQUEST -->
+    <div class="type-section" id="LaunchRequest">
+      <h2>type LaunchRequest<a class="section-anchor" href="#LaunchRequest" aria-label="Link to this section">&para;</a></h2>
+      <p>A fully-assembled Basic LTI launch, ready to submit as one POST: every launch parameter the caller supplied, plus <code>lti_message_type</code>/<code>lti_version</code>, plus the <code>oauth_*</code> parameters <a href="#LaunchRequestBuilder"><code>LaunchRequestBuilder</code></a> produced.</p>
+      <div class="method-sig">final class LaunchRequest {
+
+    public function __construct(
+        public readonly string $launchUrl,
+        public readonly array $parameters,
+    )
+
+}</div>
+      <div class="alert-box">
+        <strong>Data only, not markup.</strong> Basic LTI's own examples submit a launch as an
+        auto-submitting HTML form, but rendering one here would bake this library's opinion of a
+        <code>&lt;script&gt;</code> tag into every consumer, including one - like myON - whose
+        Content-Security-Policy requires a <code>nonce</code> on every script tag that this library
+        has no way to know. Turning <code>$parameters</code> into hidden form fields is the
+        consuming application's job - see <a href="https://github.com/henderjon/php-oauth1/tree/dev/example">example/</a>
+        for what that looks like in practice.
+      </div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- LAUNCH VERIFIER FACTORY -->
+    <div class="type-section" id="LaunchVerifierFactory">
+      <h2>type LaunchVerifierFactory<a class="section-anchor" href="#LaunchVerifierFactory" aria-label="Link to this section">&para;</a></h2>
+      <p>Assembles a <a href="#LaunchVerifier"><code>LaunchVerifier</code></a> wired to HMAC-SHA1 - see <a href="#LaunchRequestBuilderFactory"><code>LaunchRequestBuilderFactory</code></a> for why that is the only signature method Basic LTI allows.</p>
+      <div class="method-sig">final class LaunchVerifierFactory {
+
+    public function __construct(
+        Oauth1\RequestVerifierFactory $verifierFactory = new Oauth1\RequestVerifierFactory,
+    )
+
+    public function make(
+        Psr\SimpleCache\CacheInterface $nonceCache,
+        string $cacheKeySuffix = "",
+        int $timestampToleranceSeconds = 300,
+    ): LaunchVerifier
+
+}</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- LAUNCH VERIFIER -->
+    <div class="type-section" id="LaunchVerifier">
+      <h2>type LaunchVerifier<a class="section-anchor" href="#LaunchVerifier" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        Verifies one incoming Basic LTI launch: checks the OAuth 1.0 signature first (delegated to
+        the injected <code>Oauth1\RequestVerifier</code>), then that <code>lti_message_type</code>,
+        <code>lti_version</code>, and <code>resource_link_id</code> are present and correct.
+        Authentication before content, deliberately - a request that is not who it claims to be is
+        not worth inspecting further.
+      </p>
+      <div class="method-sig">final class LaunchVerifier {
+
+    public function __construct(
+        Oauth1\RequestVerifier $requestVerifier,
+    )
+
+    public function verify(
+        string $launchUrl,
+        Oauth1\Credentials $credentials,
+        array $parameters,
+    ): void
+
+}</div>
+      <div class="throws-list">
+        <p>Throws <code>Oauth1\Exceptions\RequestVerificationException</code> for a signature/timestamp/nonce failure - never caught or wrapped here, so a caller distinguishing OAuth failures from Basic LTI content failures can catch it directly. Throws <a href="#BasicLti1Exceptions"><code>InvalidLaunchException</code></a> for a missing/invalid Basic LTI parameter, once the signature itself has already checked out.</p>
+      </div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- LAUNCH VALIDATION FAILURE REASON -->
+    <div class="type-section" id="LaunchValidationFailureReason">
+      <h2>enum LaunchValidationFailureReason<a class="section-anchor" href="#LaunchValidationFailureReason" aria-label="Link to this section">&para;</a></h2>
+      <p>Why a launch was rejected as invalid Basic LTI, independent of whether it was signed correctly - attached to <a href="#BasicLti1Exceptions"><code>InvalidLaunchException</code></a>.</p>
+      <div class="method-sig">enum LaunchValidationFailureReason {
+    case MissingOrInvalidMessageType;
+    case MissingOrInvalidVersion;
+    case MissingResourceLinkId;
+}</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- LAUNCH -->
+    <div class="type-section" id="Launch">
+      <h2>type Launch<a class="section-anchor" href="#Launch" aria-label="Link to this section">&para;</a></h2>
+      <p>The two protocol-identifying parameters every Basic LTI launch carries, and the one launch-specific parameter the spec requires. Fixed for both LTI 1.0 and LTI 1.1 - the launch protocol itself did not change between them.</p>
+      <div class="method-sig">final class Launch {
+    public const MESSAGE_TYPE_PARAM = 'lti_message_type';
+    public const MESSAGE_TYPE = 'basic-lti-launch-request';
+
+    public const VERSION_PARAM = 'lti_version';
+    public const VERSION = 'LTI-1p0';
+
+    public const RESOURCE_LINK_ID_PARAM = 'resource_link_id';
+}</div>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+    <!-- BASICLTI1 EXCEPTIONS -->
+    <div class="type-section" id="BasicLti1Exceptions">
+      <h2>namespace BasicLti1\Exceptions<a class="section-anchor" href="#BasicLti1Exceptions" aria-label="Link to this section">&para;</a></h2>
+      <p>Every exception here extends <code>BasicLti1Exception</code> (itself a plain <code>\RuntimeException</code>) - a separate hierarchy from <a href="#Oauth1Exceptions"><code>Oauth1\Exceptions\*</code></a>, since a signature failure and a Basic LTI content failure are different concerns.</p>
+      <table>
+        <thead><tr><th>Exception</th><th>Thrown when</th><th>Carries</th></tr></thead>
+        <tbody>
+          <tr><td><code>BasicLti1Exception</code></td><td>Base class for every exception below. Never thrown directly.</td><td>&mdash;</td></tr>
+          <tr><td><code>InvalidLaunchException</code></td><td>A launch is missing or carries the wrong value for <code>lti_message_type</code>, <code>lti_version</code>, or <code>resource_link_id</code>.</td><td><code>getReason(): LaunchValidationFailureReason</code></td></tr>
+        </tbody>
+      </table>
+      <p class="back-to-index"><a href="#index">↑ back to index</a></p>
+    </div>
+
+  </div>
+
+  <div id="footer">
+    <p>
+      <a href="https://github.com/henderjon/php-oauth1">henderjon/php-oauth1</a> - BSD-3-Clause.
+      Documentation generated for the public API surface under <code>Oauth1\</code>,
+      <code>Oauth1\Exceptions\</code>, <code>BasicLti1\</code>, and
+      <code>BasicLti1\Exceptions\</code>. Internal collaborators - the signature base string
+      builder, the percent-encoding helper, and <code>NonceStore</code> (which wraps a PSR-16
+      cache the same way <code>php-oidc</code>'s <code>AuthorizationStateStore</code> does) - are
+      intentionally not documented here. See the reference specs this library implements against
+      in <a href="https://github.com/henderjon/php-oauth1/tree/dev/specs"><code>specs/</code></a>:
+      RFC 5849, the Basic LTI v1.0 Implementation Guide, and the LTI v1.1 Implementation Guide.
+    </p>
+  </div>
+
+  <script>
+    function bindToggle(el) {
+      var toggleButtons = el.querySelectorAll('.toggleButton');
+      toggleButtons.forEach(function (button) {
+        button.addEventListener('click', function (e) {
+          var closestToggle = e.target.closest('.toggle, .toggleVisible');
+          if (closestToggle !== el) {
+            return;
+          }
+
+          if (el.classList.contains('toggle')) {
+            el.classList.remove('toggle');
+            el.classList.add('toggleVisible');
+          } else {
+            el.classList.remove('toggleVisible');
+            el.classList.add('toggle');
+          }
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.toggle, .toggleVisible').forEach(function (el) {
+        bindToggle(el);
+      });
+    });
+  </script>
+</body>
+</html>
