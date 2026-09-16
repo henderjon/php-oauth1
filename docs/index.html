@@ -420,6 +420,11 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
       <h2>Index<a class="section-anchor" href="#index" aria-label="Link to this section">&para;</a></h2>
       <div class="index-columns">
         <div>
+          <h4>Getting Started</h4>
+          <ul>
+            <li><a href="#Terminology">Terminology</a></li>
+            <li><a href="#Logging">Logging</a></li>
+          </ul>
           <h4>Oauth1 &mdash; Signing</h4>
           <ul>
             <li><a href="#RequestSignerFactory">RequestSignerFactory</a></li>
@@ -495,6 +500,55 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
       </table>
     </div>
 
+    <!-- LOGGING -->
+    <div id="Logging">
+      <h2>Logging<a class="section-anchor" href="#Logging" aria-label="Link to this section">&para;</a></h2>
+      <p>
+        Every constructor in this library takes an optional PSR-3 <code>Psr\Log\LoggerInterface</code>,
+        defaulting to a no-op <code>NullLogger</code> - passing one is opt-in. The scheme mirrors
+        <code>php-oidc</code>'s own:
+      </p>
+      <table>
+        <thead><tr><th>Level</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td><code>debug</code></td><td>The happy path. Every successful <code>sign()</code>/<code>verify()</code>/<code>build()</code> call, at every layer, logs one trace.</td></tr>
+          <tr><td><code>alert</code></td><td>A configuration choice worth a developer's own review, logged on <em>every</em> use, not once - currently just PLAINTEXT signing/verifying, which "MUST only be used over TLS" and this library has no way to enforce.</td></tr>
+          <tr><td><code>error</code></td><td>Every failure, always logged immediately before the exception it precedes is thrown - never after, never instead of. Always carries a <code>security_relevant</code> boolean.</td></tr>
+        </tbody>
+      </table>
+      <div class="alert-box">
+        <strong><code>warning</code> is unused.</strong> In <code>php-oidc</code> it marks a fail-open
+        decision or a clean "nothing found" lookup - this library has no fail-open path by design
+        (every check either passes or throws), so nothing here has an equivalent. This is a
+        deliberate omission, not a gap - revisit it only if a fail-open path is ever added.
+      </div>
+      <p id="security-relevant-taxonomy">
+        <code>security_relevant</code> is <code>true</code> only for the small set of outcomes that
+        are essentially unexplainable except as tampering or a replay attempt -
+        <a href="#VerificationFailureReason"><code>InvalidSignature</code></a> and
+        <a href="#VerificationFailureReason"><code>NonceReplayed</code></a>. Every other failure
+        (a missing parameter, an unsupported version/method, a mismatched consumer key, a
+        timestamp outside tolerance, an unreadable key, a missing Basic LTI parameter) is
+        <code>false</code>, since each is just as plausibly a caller mistake, a stale integration,
+        or ordinary clock skew as an attack. This mirrors <code>php-oidc</code>'s own curated list
+        (signature failure, <code>alg: none</code>, nonce mismatch are <code>true</code>; an
+        expired token or an audience mismatch - despite sounding just as security-relevant - are
+        <code>false</code>). <code>false</code> means "not in that curated set," never "confirmed
+        benign."
+      </p>
+      <table>
+        <thead><tr><th>Class</th><th>Logs</th></tr></thead>
+        <tbody>
+          <tr><td><a href="#RequestSigner"><code>RequestSigner</code></a></td><td><code>debug</code> on success; <code>alert</code> for PLAINTEXT; <code>error</code> (<code>false</code>) for a malformed URL.</td></tr>
+          <tr><td><a href="#RequestVerifier"><code>RequestVerifier</code></a></td><td><code>debug</code> on success; <code>alert</code> for PLAINTEXT; <code>error</code> for every <a href="#VerificationFailureReason"><code>VerificationFailureReason</code></a> (<code>true</code> for InvalidSignature/NonceReplayed, <code>false</code> otherwise) and for a malformed URL.</td></tr>
+          <tr><td><a href="#RsaSha1Signer"><code>RsaSha1Signer</code></a> / <a href="#RsaSha1Verifier"><code>RsaSha1Verifier</code></a></td><td><code>debug</code> once the key loads/signs; <code>error</code> (<code>false</code>) for an unreadable key.</td></tr>
+          <tr><td><a href="#RequestSignerFactory"><code>RequestSignerFactory</code></a> / <a href="#RequestVerifierFactory"><code>RequestVerifierFactory</code></a></td><td><code>error</code> (<code>false</code>) for RSA-SHA1 requested with no key.</td></tr>
+          <tr><td><a href="#LaunchRequestBuilder"><code>LaunchRequestBuilder</code></a> / <a href="#LaunchVerifier"><code>LaunchVerifier</code></a></td><td><code>debug</code> on success; <code>error</code> (<code>false</code>) for a missing/invalid Basic LTI parameter.</td></tr>
+        </tbody>
+      </table>
+      <p><code>HmacSha1Signer</code>, <code>PlaintextSigner</code>, <code>SignatureBaseString</code>, <code>PercentEncoding</code>, and <code>NonceStore</code> log nothing themselves - each is a pure computation or a thin cache wrapper with no independent failure surface of its own; the layer that calls them (<code>RequestSigner</code>/<code>RequestVerifier</code>) is where a decision, and therefore a log line, actually belongs.</p>
+    </div>
+
     <!-- REQUEST SIGNER FACTORY -->
     <div class="type-section" id="RequestSignerFactory">
       <h2>type RequestSignerFactory<a class="section-anchor" href="#RequestSignerFactory" aria-label="Link to this section">&para;</a></h2>
@@ -568,7 +622,8 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
       </p>
       <p>
         <code>oauth_timestamp</code> and <code>oauth_nonce</code> are omitted for PLAINTEXT, per
-        &sect;3.1 and &sect;3.4.4 - PLAINTEXT uses neither.
+        &sect;3.1 and &sect;3.4.4 - PLAINTEXT uses neither. Every PLAINTEXT call also logs an
+        <code>alert</code>, every time, not once - see <a href="#Logging">Logging</a>.
       </p>
       <pre><span class="comment">// RFC 5849 &sect;3.1 / &sect;3.4.1.1's own worked example, reproduced by this
 // library's test suite byte for byte (the signature base string) and via an
@@ -737,13 +792,14 @@ interface VerifierInterface {
     public function __construct(
         string $privateKey,
         string $passphrase = "",
+        Psr\Log\LoggerInterface $logger = new NullLogger,
     )
 
     public function method(): SignatureMethod
     public function sign(string $baseString, Credentials $credentials): string
 
 }</div>
-      <p>Throws <a href="#Oauth1Exceptions"><code>SigningException</code></a> if the private key cannot be read, or if <code>openssl_sign()</code> itself rejects the input.</p>
+      <p>Throws <a href="#Oauth1Exceptions"><code>SigningException</code></a> if the private key cannot be read, or if <code>openssl_sign()</code> itself rejects the input - logging an <code>error</code> (<code>security_relevant: false</code>) immediately before, and a <code>debug</code> trace on success. See <a href="#Logging">Logging</a>.</p>
       <p class="back-to-index"><a href="#index">↑ back to index</a></p>
     </div>
 
@@ -760,12 +816,14 @@ interface VerifierInterface {
 
     public function __construct(
         string $publicKey,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
     )
 
     public function method(): SignatureMethod
     public function verify(string $baseString, Credentials $credentials, string $signature): bool
 
 }</div>
+      <p>Throws <a href="#Oauth1Exceptions"><code>SigningException</code></a> if the public key cannot be read - logging an <code>error</code> (<code>security_relevant: false</code>) immediately before, and a <code>debug</code> trace once the key loads. See <a href="#Logging">Logging</a>.</p>
       <p class="back-to-index"><a href="#index">↑ back to index</a></p>
     </div>
 
@@ -820,7 +878,9 @@ interface VerifierInterface {
       <div class="alert-box">
         Fail-closed: every failure throws <a href="#Oauth1Exceptions"><code>RequestVerificationException</code></a>
         rather than returning <code>false</code> - a caller cannot accidentally treat "did not
-        check" the same as "checked and passed".
+        check" the same as "checked and passed". Every one of those failures also logs an
+        <code>error</code> immediately before throwing, and PLAINTEXT logs an <code>alert</code>
+        on every call - see <a href="#Logging">Logging</a>.
       </div>
       <div class="method-sig">final class RequestVerifier {
 
@@ -917,10 +977,21 @@ final class RandomNonceGenerator implements NonceGeneratorInterface {
         the HMAC-SHA1 signing method" - so a caller never has an opportunity to wire up a signature
         method Basic LTI does not allow.
       </p>
+      <p>
+        Takes the same raw collaborators (nonce generator, clock, logger)
+        <a href="#RequestSignerFactory"><code>Oauth1\RequestSignerFactory</code></a> does, rather
+        than a pre-built one, and builds one internally - mirroring
+        <code>Oidc\OpenIDConnectClientFactory</code>'s own pattern. This is what lets one
+        <code>$logger</code> passed here reach both this layer's own <code>debug</code>/<code>error</code>
+        calls and <code>RequestSigner</code>'s, without wiring the same logger into two factories
+        separately. See <a href="#Logging">Logging</a>.
+      </p>
       <div class="method-sig">final class LaunchRequestBuilderFactory {
 
     public function __construct(
-        Oauth1\RequestSignerFactory $signerFactory = new Oauth1\RequestSignerFactory,
+        Oauth1\NonceGeneratorInterface $nonceGenerator = new Oauth1\RandomNonceGenerator,
+        Psr\Clock\ClockInterface $clock = new Oauth1\CurrentClock,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
     )
 
     public function make(): LaunchRequestBuilder
@@ -941,6 +1012,7 @@ final class RandomNonceGenerator implements NonceGeneratorInterface {
 
     public function __construct(
         Oauth1\RequestSigner $signer,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
     )
 
     public function build(
@@ -950,6 +1022,7 @@ final class RandomNonceGenerator implements NonceGeneratorInterface {
     ): LaunchRequest
 
 }</div>
+      <p>Logs a <code>debug</code> trace on success, or an <code>error</code> (<code>security_relevant: false</code>) immediately before throwing <a href="#BasicLti1Exceptions"><code>InvalidLaunchException</code></a> for a missing <code>resource_link_id</code>. See <a href="#Logging">Logging</a>.</p>
       <div class="alert-box">
         <strong>oauth_callback is deliberately not signed.</strong> It is added to the launch as a
         plain, unsigned parameter set to <code>about:blank</code> - not passed through
@@ -1010,10 +1083,12 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
     <div class="type-section" id="LaunchVerifierFactory">
       <h2>type LaunchVerifierFactory<a class="section-anchor" href="#LaunchVerifierFactory" aria-label="Link to this section">&para;</a></h2>
       <p>Assembles a <a href="#LaunchVerifier"><code>LaunchVerifier</code></a> wired to HMAC-SHA1 - see <a href="#LaunchRequestBuilderFactory"><code>LaunchRequestBuilderFactory</code></a> for why that is the only signature method Basic LTI allows.</p>
+      <p>Takes the same raw collaborators (clock, logger) <a href="#RequestVerifierFactory"><code>Oauth1\RequestVerifierFactory</code></a> does, rather than a pre-built one - see <a href="#LaunchRequestBuilderFactory"><code>LaunchRequestBuilderFactory</code></a>'s docblock for why, on the signing side, that same reasoning applies here too.</p>
       <div class="method-sig">final class LaunchVerifierFactory {
 
     public function __construct(
-        Oauth1\RequestVerifierFactory $verifierFactory = new Oauth1\RequestVerifierFactory,
+        Psr\Clock\ClockInterface $clock = new Oauth1\CurrentClock,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
     )
 
     public function make(
@@ -1040,6 +1115,7 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
 
     public function __construct(
         Oauth1\RequestVerifier $requestVerifier,
+        Psr\Log\LoggerInterface $logger = new NullLogger,
     )
 
     public function verify(
@@ -1049,6 +1125,12 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
     ): void
 
 }</div>
+      <p>
+        Logs a <code>debug</code> trace on success, or an <code>error</code> (always
+        <code>security_relevant: false</code> - see this class's own docblock for why) immediately
+        before throwing <a href="#BasicLti1Exceptions"><code>InvalidLaunchException</code></a> for
+        any of the three content checks above. See <a href="#Logging">Logging</a>.
+      </p>
       <div class="throws-list">
         <p>Throws <code>Oauth1\Exceptions\RequestVerificationException</code> for a signature/timestamp/nonce failure - never caught or wrapped here, so a caller distinguishing OAuth failures from Basic LTI content failures can catch it directly. Throws <a href="#BasicLti1Exceptions"><code>InvalidLaunchException</code></a> for a missing/invalid Basic LTI parameter, once the signature itself has already checked out.</p>
       </div>

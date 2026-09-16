@@ -3,6 +3,8 @@
 namespace Oauth1;
 
 use Oauth1\Exceptions\SigningException;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * RFC 5849 §3.4.3: RSASSA-PKCS1-v1_5 over the signature base string, using SHA-1 and the
@@ -16,6 +18,7 @@ final class RsaSha1Signer implements SignerInterface {
 	public function __construct(
 		private readonly string $privateKey,
 		private readonly string $passphrase = '',
+		private readonly LoggerInterface $logger = new NullLogger,
 	) {
 	}
 
@@ -26,15 +29,26 @@ final class RsaSha1Signer implements SignerInterface {
 	public function sign( string $baseString, Credentials $credentials ): string {
 		$key = openssl_pkey_get_private($this->privateKey, $this->passphrase);
 		if ( $key === false ) {
-			throw new SigningException('RSA-SHA1 signing failed: private key could not be read');
+			$this->fail('RSA-SHA1 signing failed: private key could not be read', $credentials);
 		}
 
 		$signature = '';
 		if ( ! openssl_sign($baseString, $signature, $key, OPENSSL_ALGO_SHA1) ) {
-			throw new SigningException('RSA-SHA1 signing failed: openssl_sign() rejected the base string or key');
+			$this->fail('RSA-SHA1 signing failed: openssl_sign() rejected the base string or key', $credentials);
 		}
 
+		$this->logger->debug('oauth1.rsa_sha1_signed', [ 'consumer_key' => $credentials->consumerKey ]);
+
 		return base64_encode($signature);
+	}
+
+	private function fail( string $message, Credentials $credentials ): never {
+		$this->logger->error('oauth1.signing_failed', [
+			'consumer_key' => $credentials->consumerKey,
+			'security_relevant' => false,
+		]);
+
+		throw new SigningException($message);
 	}
 
 }

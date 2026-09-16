@@ -3,6 +3,7 @@
 namespace Oauth1;
 
 use Oauth1\Exceptions\SigningException;
+use Oauth1\Fakes\ArrayLogger;
 use PHPUnit\Framework\TestCase;
 
 class RequestSignerFactoryTest extends TestCase {
@@ -39,6 +40,20 @@ class RequestSignerFactoryTest extends TestCase {
 		$this->expectException(SigningException::class);
 
 		(new RequestSignerFactory)->forMethod(SignatureMethod::RsaSha1);
+	}
+
+	public function testForMethodLogsAnErrorForRsaSha1WithNoPrivateKey(): void {
+		$logger = new ArrayLogger;
+
+		try {
+			(new RequestSignerFactory(logger: $logger))->forMethod(SignatureMethod::RsaSha1);
+			$this->fail('Expected a SigningException');
+		} catch ( SigningException ) {
+			$errors = $logger->recordsAt('error');
+			$this->assertCount(1, $errors);
+			$this->assertSame('oauth1.signer_factory_misconfigured', $errors[0]['message']);
+			$this->assertFalse($errors[0]['context']['security_relevant']);
+		}
 	}
 
 }

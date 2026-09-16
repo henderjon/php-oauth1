@@ -5,6 +5,7 @@ namespace BasicLti1;
 use BasicLti1\Exceptions\InvalidLaunchException;
 use Oauth1\Credentials;
 use Oauth1\Exceptions\RequestVerificationException;
+use Oauth1\Fakes\ArrayLogger;
 use Oauth1\Fakes\FixedClock;
 use Oauth1\Fakes\InMemoryCache;
 use Oauth1\HmacSha1Signer;
@@ -15,12 +16,15 @@ use PHPUnit\Framework\TestCase;
 
 class LaunchVerifierTest extends TestCase {
 
-	private function verifier( ?FixedClock $clock = null ): LaunchVerifier {
-		return new LaunchVerifier(new RequestVerifier(
-			new HmacSha1Signer,
-			new NonceStore(new InMemoryCache),
-			$clock ?? new FixedClock(new \DateTimeImmutable('@1251600739')),
-		));
+	private function verifier( ?FixedClock $clock = null, ?ArrayLogger $logger = null ): LaunchVerifier {
+		return new LaunchVerifier(
+			new RequestVerifier(
+				new HmacSha1Signer,
+				new NonceStore(new InMemoryCache),
+				$clock ?? new FixedClock(new \DateTimeImmutable('@1251600739')),
+			),
+			$logger ?? new ArrayLogger,
+		);
 	}
 
 	public function testVerifyAcceptsTheBasicLtiV1ImplementationGuidesOwnWorkedExample(): void {
@@ -50,13 +54,20 @@ class LaunchVerifierTest extends TestCase {
 			'user_id' => '292832126',
 		];
 
-		$this->verifier()->verify(
+		$logger = new ArrayLogger;
+
+		$this->verifier(logger: $logger)->verify(
 			'http://dr-chuck.com/ims/php-simple/tool.php',
 			new Credentials('12345', 'secret'),
 			$parameters,
 		);
 
-		$this->addToAssertionCount(1);
+		$debug = $logger->recordsAt('debug');
+		$this->assertCount(1, $debug);
+		$this->assertSame('basiclti1.launch_verified', $debug[0]['message']);
+		$this->assertSame('12345', $debug[0]['context']['consumer_key']);
+		$this->assertSame('120988f929-274612', $debug[0]['context']['resource_link_id']);
+		$this->assertSame([], $logger->recordsAboveDebug());
 	}
 
 	public function testVerifyChecksTheSignatureBeforeAnyLtiContent(): void {
@@ -89,6 +100,7 @@ class LaunchVerifierTest extends TestCase {
 	public function testVerifyThrowsForAMissingResourceLinkIdOnceSignatureChecksOut(): void {
 		$credentials = new Credentials('key', 'secret');
 		$clock       = new FixedClock(new \DateTimeImmutable('@1251600739'));
+		$logger      = new ArrayLogger;
 		$signer      = new \Oauth1\RequestSigner(new HmacSha1Signer, clock: $clock);
 
 		$parameters = [ 'lti_message_type' => Launch::MESSAGE_TYPE, 'lti_version' => Launch::VERSION ];
@@ -96,16 +108,18 @@ class LaunchVerifierTest extends TestCase {
 		$parameters = [ ...$parameters, ...$signed->oauthParameters ];
 
 		try {
-			$this->verifier($clock)->verify('http://example.com/launch', $credentials, $parameters);
+			$this->verifier($clock, $logger)->verify('http://example.com/launch', $credentials, $parameters);
 			$this->fail('Expected an InvalidLaunchException');
 		} catch ( InvalidLaunchException $exception ) {
 			$this->assertSame(LaunchValidationFailureReason::MissingResourceLinkId, $exception->getReason());
+			$this->assertLoggedError($logger, LaunchValidationFailureReason::MissingResourceLinkId);
 		}
 	}
 
 	public function testVerifyThrowsForAnInvalidMessageTypeOnceSignatureChecksOut(): void {
 		$credentials = new Credentials('key', 'secret');
 		$clock       = new FixedClock(new \DateTimeImmutable('@1251600739'));
+		$logger      = new ArrayLogger;
 		$signer      = new \Oauth1\RequestSigner(new HmacSha1Signer, clock: $clock);
 
 		$parameters = [ 'lti_message_type' => 'something-else', 'lti_version' => Launch::VERSION, 'resource_link_id' => 'link-1' ];
@@ -113,11 +127,20 @@ class LaunchVerifierTest extends TestCase {
 		$parameters = [ ...$parameters, ...$signed->oauthParameters ];
 
 		try {
-			$this->verifier($clock)->verify('http://example.com/launch', $credentials, $parameters);
+			$this->verifier($clock, $logger)->verify('http://example.com/launch', $credentials, $parameters);
 			$this->fail('Expected an InvalidLaunchException');
 		} catch ( InvalidLaunchException $exception ) {
 			$this->assertSame(LaunchValidationFailureReason::MissingOrInvalidMessageType, $exception->getReason());
+			$this->assertLoggedError($logger, LaunchValidationFailureReason::MissingOrInvalidMessageType);
 		}
+	}
+
+	private function assertLoggedError( ArrayLogger $logger, LaunchValidationFailureReason $reason ): void {
+		$errors = $logger->recordsAt('error');
+		$this->assertCount(1, $errors);
+		$this->assertSame('basiclti1.launch_verification_failed', $errors[0]['message']);
+		$this->assertSame($reason->name, $errors[0]['context']['reason']);
+		$this->assertFalse($errors[0]['context']['security_relevant']);
 	}
 
 }

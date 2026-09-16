@@ -33,13 +33,19 @@ final class RequestSignerFactory {
 	 *                               outside RSA-SHA1.
 	 */
 	public function forMethod( SignatureMethod $method, ?string $rsaPrivateKey = null, string $rsaPassphrase = '' ): RequestSigner {
+		if ( $method === SignatureMethod::RsaSha1 && $rsaPrivateKey === null ) {
+			$this->logger->error('oauth1.signer_factory_misconfigured', [
+				'method' => $method->value,
+				'security_relevant' => false,
+			]);
+
+			throw new SigningException('RSA-SHA1 requires a private key');
+		}
+
 		$signer = match ( $method ) {
 			SignatureMethod::HmacSha1 => new HmacSha1Signer,
 			SignatureMethod::Plaintext => new PlaintextSigner,
-			SignatureMethod::RsaSha1 => new RsaSha1Signer(
-				$rsaPrivateKey ?? throw new SigningException('RSA-SHA1 requires a private key'),
-				$rsaPassphrase,
-			),
+			SignatureMethod::RsaSha1 => new RsaSha1Signer($rsaPrivateKey, $rsaPassphrase, $this->logger),
 		};
 
 		return new RequestSigner($signer, $this->nonceGenerator, $this->clock, $this->logger);

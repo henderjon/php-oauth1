@@ -39,12 +39,19 @@ final class RequestVerifierFactory {
 		int $timestampToleranceSeconds = 300,
 		?string $rsaPublicKey = null,
 	): RequestVerifier {
+		if ( $method === SignatureMethod::RsaSha1 && $rsaPublicKey === null ) {
+			$this->logger->error('oauth1.verifier_factory_misconfigured', [
+				'method' => $method->value,
+				'security_relevant' => false,
+			]);
+
+			throw new SigningException('RSA-SHA1 requires a public key');
+		}
+
 		$verifier = match ( $method ) {
 			SignatureMethod::HmacSha1 => new HmacSha1Signer,
 			SignatureMethod::Plaintext => new PlaintextSigner,
-			SignatureMethod::RsaSha1 => new RsaSha1Verifier(
-				$rsaPublicKey ?? throw new SigningException('RSA-SHA1 requires a public key'),
-			),
+			SignatureMethod::RsaSha1 => new RsaSha1Verifier($rsaPublicKey, $this->logger),
 		};
 
 		return new RequestVerifier(

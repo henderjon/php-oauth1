@@ -2,6 +2,8 @@
 
 namespace Oauth1;
 
+use Oauth1\Exceptions\SigningException;
+use Oauth1\Fakes\ArrayLogger;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -57,6 +59,59 @@ class RsaSha1Test extends TestCase {
 
 		$this->assertSame(SignatureMethod::RsaSha1, (new RsaSha1Signer($privateKeyPem))->method());
 		$this->assertSame(SignatureMethod::RsaSha1, (new RsaSha1Verifier($publicKeyPem))->method());
+	}
+
+	public function testSignLogsADebugTraceOnSuccess(): void {
+		[ $privateKeyPem ] = $this->generateKeyPair();
+		$logger = new ArrayLogger;
+
+		(new RsaSha1Signer($privateKeyPem, logger: $logger))->sign('base string', new Credentials('key'));
+
+		$debug = $logger->recordsAt('debug');
+		$this->assertCount(1, $debug);
+		$this->assertSame('oauth1.rsa_sha1_signed', $debug[0]['message']);
+		$this->assertSame([], $logger->recordsAboveDebug());
+	}
+
+	public function testSignLogsAnErrorAndThrowsForAnUnreadablePrivateKey(): void {
+		$logger = new ArrayLogger;
+
+		try {
+			(new RsaSha1Signer('not a real key', logger: $logger))->sign('base string', new Credentials('key'));
+			$this->fail('Expected a SigningException');
+		} catch ( SigningException ) {
+			$errors = $logger->recordsAt('error');
+			$this->assertCount(1, $errors);
+			$this->assertSame('oauth1.signing_failed', $errors[0]['message']);
+			$this->assertSame('key', $errors[0]['context']['consumer_key']);
+			$this->assertFalse($errors[0]['context']['security_relevant']);
+		}
+	}
+
+	public function testVerifyLogsADebugTraceOnceTheKeyIsLoaded(): void {
+		[ , $publicKeyPem ] = $this->generateKeyPair();
+		$logger = new ArrayLogger;
+
+		(new RsaSha1Verifier($publicKeyPem, $logger))->verify('base string', new Credentials('key'), 'not-a-real-signature');
+
+		$debug = $logger->recordsAt('debug');
+		$this->assertCount(1, $debug);
+		$this->assertSame('oauth1.rsa_sha1_key_loaded', $debug[0]['message']);
+		$this->assertSame([], $logger->recordsAboveDebug());
+	}
+
+	public function testVerifyLogsAnErrorAndThrowsForAnUnreadablePublicKey(): void {
+		$logger = new ArrayLogger;
+
+		try {
+			(new RsaSha1Verifier('not a real key', $logger))->verify('base string', new Credentials('key'), 'signature');
+			$this->fail('Expected a SigningException');
+		} catch ( SigningException ) {
+			$errors = $logger->recordsAt('error');
+			$this->assertCount(1, $errors);
+			$this->assertSame('oauth1.signing_failed', $errors[0]['message']);
+			$this->assertFalse($errors[0]['context']['security_relevant']);
+		}
 	}
 
 }

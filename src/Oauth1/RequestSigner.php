@@ -2,6 +2,7 @@
 
 namespace Oauth1;
 
+use Oauth1\Exceptions\SigningException;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -13,7 +14,11 @@ use Psr\Log\NullLogger;
  * PLAINTEXT is a constructor argument, never a branch in this class.
  *
  * `oauth_timestamp` and `oauth_nonce` are omitted for PLAINTEXT, per §3.1 and §3.4.4 - PLAINTEXT
- * uses neither, so including them would only be dead weight on the wire.
+ * uses neither, so including them would only be dead weight on the wire. Every PLAINTEXT sign()
+ * call also logs an `alert` - PLAINTEXT "MUST only be used over TLS" (§3.4.4), a configuration
+ * choice worth a developer's own review, and this class has no way to enforce it. Logged every
+ * time, not once, since every request made this way is unauthenticated if TLS is not actually in
+ * place - mirroring Oidc\CurlHttpFetcher's own TLS-disabled alert.
  */
 final class RequestSigner {
 
@@ -58,16 +63,16 @@ final class RequestSigner {
 			$oauthParameters['oauth_callback'] = $callback;
 		}
 
-		if ( $this->signer->method() !== SignatureMethod::Plaintext ) {
+		if ( $this->signer->method() === SignatureMethod::Plaintext ) {
+			$this->logger->alert('oauth1.plaintext_method_used', [ 'consumer_key' => $credentials->consumerKey ]);
+		} else {
 			$oauthParameters['oauth_timestamp'] = (string) $this->clock->now()->getTimestamp();
 			$oauthParameters['oauth_nonce']     = $this->nonceGenerator->generate();
 		}
 
 		$oauthParameters['oauth_version'] = '1.0';
 
-		$baseString = $this->signer->method() === SignatureMethod::Plaintext
-			? ''
-			: SignatureBaseString::build($httpMethod, $url, [ ...$requestParameters, ...$oauthParameters ]);
+		$baseString = $this->signer->method() === SignatureMethod::Plaintext ? '' : $this->baseString($httpMethod, $url, $requestParameters, $oauthParameters, $credentials);
 
 		$oauthParameters['oauth_signature'] = $this->signer->sign($baseString, $credentials);
 
@@ -77,6 +82,24 @@ final class RequestSigner {
 		]);
 
 		return new SignedRequest($oauthParameters);
+	}
+
+	/**
+	 * @param array<string,string|list<string>> $requestParameters
+	 * @param array<string,string>              $oauthParameters
+	 */
+	private function baseString( string $httpMethod, string $url, array $requestParameters, array $oauthParameters, Credentials $credentials ): string {
+		try {
+			return SignatureBaseString::build($httpMethod, $url, [ ...$requestParameters, ...$oauthParameters ]);
+		} catch ( SigningException $exception ) {
+			$this->logger->error('oauth1.signing_failed', [
+				'consumer_key' => $credentials->consumerKey,
+				'exception' => $exception,
+				'security_relevant' => false,
+			]);
+
+			throw $exception;
+		}
 	}
 
 }

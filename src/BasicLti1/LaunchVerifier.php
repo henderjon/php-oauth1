@@ -6,6 +6,8 @@ use BasicLti1\Exceptions\InvalidLaunchException;
 use Oauth1\Credentials;
 use Oauth1\Exceptions\RequestVerificationException;
 use Oauth1\RequestVerifier;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * Verifies one incoming Basic LTI launch: checks the OAuth 1.0 signature first (delegated to the
@@ -17,6 +19,13 @@ use Oauth1\RequestVerifier;
  * oauth_callback, if present, is stripped before OAuth verification, mirroring
  * LaunchRequestBuilder's choice not to sign it - see that class's docblock for why.
  *
+ * Every content failure below logs an `error()` immediately before throwing, with
+ * `security_relevant` always `false` - once the signature has already checked out, a wrong
+ * lti_message_type/lti_version or a missing resource_link_id is a non-conformant Tool Consumer,
+ * not tampering; the signature check is what would have caught tampering, and that check
+ * (RequestVerifier's own) already logs `true` for the two reasons that actually warrant it. See
+ * RequestVerifier's docblock for the same reasoning applied to Oauth1 itself.
+ *
  * @throws RequestVerificationException for a signature/timestamp/nonce failure - never caught or
  *         wrapped here, so a caller distinguishing OAuth failures from Basic LTI content
  *         failures can catch it directly.
@@ -27,6 +36,7 @@ final class LaunchVerifier {
 
 	public function __construct(
 		private readonly RequestVerifier $requestVerifier,
+		private readonly LoggerInterface $logger = new NullLogger,
 	) {
 	}
 
@@ -41,25 +51,31 @@ final class LaunchVerifier {
 		$this->requestVerifier->verify('POST', $launchUrl, $credentials, $signedParameters);
 
 		if ( ( $parameters[Launch::MESSAGE_TYPE_PARAM] ?? null ) !== Launch::MESSAGE_TYPE ) {
-			throw new InvalidLaunchException(
-				'Missing or invalid lti_message_type',
-				LaunchValidationFailureReason::MissingOrInvalidMessageType,
-			);
+			$this->fail('Missing or invalid lti_message_type', LaunchValidationFailureReason::MissingOrInvalidMessageType, $credentials);
 		}
 
 		if ( ( $parameters[Launch::VERSION_PARAM] ?? null ) !== Launch::VERSION ) {
-			throw new InvalidLaunchException(
-				'Missing or invalid lti_version',
-				LaunchValidationFailureReason::MissingOrInvalidVersion,
-			);
+			$this->fail('Missing or invalid lti_version', LaunchValidationFailureReason::MissingOrInvalidVersion, $credentials);
 		}
 
 		if ( ( $parameters[Launch::RESOURCE_LINK_ID_PARAM] ?? '' ) === '' ) {
-			throw new InvalidLaunchException(
-				'A Basic LTI launch requires a non-empty resource_link_id',
-				LaunchValidationFailureReason::MissingResourceLinkId,
-			);
+			$this->fail('A Basic LTI launch requires a non-empty resource_link_id', LaunchValidationFailureReason::MissingResourceLinkId, $credentials);
 		}
+
+		$this->logger->debug('basiclti1.launch_verified', [
+			'consumer_key' => $credentials->consumerKey,
+			'resource_link_id' => $parameters[Launch::RESOURCE_LINK_ID_PARAM],
+		]);
+	}
+
+	private function fail( string $message, LaunchValidationFailureReason $reason, Credentials $credentials ): never {
+		$this->logger->error('basiclti1.launch_verification_failed', [
+			'consumer_key' => $credentials->consumerKey,
+			'reason' => $reason->name,
+			'security_relevant' => false,
+		]);
+
+		throw new InvalidLaunchException($message, $reason);
 	}
 
 }

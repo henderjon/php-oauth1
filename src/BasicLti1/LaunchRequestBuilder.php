@@ -5,6 +5,8 @@ namespace BasicLti1;
 use BasicLti1\Exceptions\InvalidLaunchException;
 use Oauth1\Credentials;
 use Oauth1\RequestSigner;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * Builds one Basic LTI launch: sets lti_message_type/lti_version (never left to the caller to
@@ -26,6 +28,7 @@ final class LaunchRequestBuilder {
 
 	public function __construct(
 		private readonly RequestSigner $signer,
+		private readonly LoggerInterface $logger = new NullLogger,
 	) {
 	}
 
@@ -40,6 +43,12 @@ final class LaunchRequestBuilder {
 	 */
 	public function build( string $launchUrl, Credentials $credentials, array $launchParameters ): LaunchRequest {
 		if ( ( $launchParameters[Launch::RESOURCE_LINK_ID_PARAM] ?? '' ) === '' ) {
+			$this->logger->error('basiclti1.launch_build_failed', [
+				'consumer_key' => $credentials->consumerKey,
+				'reason' => LaunchValidationFailureReason::MissingResourceLinkId->name,
+				'security_relevant' => false,
+			]);
+
 			throw new InvalidLaunchException(
 				'A Basic LTI launch requires a non-empty resource_link_id',
 				LaunchValidationFailureReason::MissingResourceLinkId,
@@ -50,6 +59,11 @@ final class LaunchRequestBuilder {
 		$launchParameters[Launch::VERSION_PARAM]      = Launch::VERSION;
 
 		$signed = $this->signer->sign('POST', $launchUrl, $credentials, $launchParameters);
+
+		$this->logger->debug('basiclti1.launch_built', [
+			'consumer_key' => $credentials->consumerKey,
+			'resource_link_id' => $launchParameters[Launch::RESOURCE_LINK_ID_PARAM],
+		]);
 
 		return new LaunchRequest($launchUrl, [
 			...$launchParameters,
