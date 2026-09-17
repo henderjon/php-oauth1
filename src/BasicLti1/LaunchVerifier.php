@@ -5,6 +5,7 @@ namespace BasicLti1;
 use BasicLti1\Exceptions\InvalidLaunchException;
 use Oauth1\Credentials;
 use Oauth1\Exceptions\RequestVerificationException;
+use Oauth1\Exceptions\SigningException;
 use Oauth1\RequestVerifier;
 use Oauth1\Truncate;
 use Psr\Log\LoggerInterface;
@@ -30,6 +31,9 @@ use Psr\Log\NullLogger;
  * @throws RequestVerificationException for a signature/timestamp/nonce failure - never caught or
  *         wrapped here, so a caller distinguishing OAuth failures from Basic LTI content
  *         failures can catch it directly.
+ * @throws SigningException for a malformed launch URL, or the nonce store failing to persist a
+ *         claim - propagated uncaught from the delegated Oauth1\RequestVerifier::verify() call,
+ *         same as RequestVerificationException above.
  * @throws InvalidLaunchException for a missing/invalid Basic LTI parameter, once the signature
  *         itself has already checked out.
  */

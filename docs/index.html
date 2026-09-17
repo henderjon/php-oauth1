@@ -534,7 +534,8 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
         <a href="#VerificationFailureReason"><code>InvalidSignature</code></a> and
         <a href="#VerificationFailureReason"><code>NonceReplayed</code></a>. Every other failure
         (a missing parameter, an unsupported version/method, a mismatched consumer key, a
-        timestamp outside tolerance, an unreadable key, a missing Basic LTI parameter) is
+        non-canonical or out-of-tolerance timestamp, an unreadable key, a missing Basic LTI
+        parameter) is
         <code>false</code>, since each is just as plausibly a caller mistake, a stale integration,
         or ordinary clock skew as an attack. This mirrors <code>php-oidc</code>'s own curated list
         (signature failure, <code>alg: none</code>, nonce mismatch are <code>true</code>; an

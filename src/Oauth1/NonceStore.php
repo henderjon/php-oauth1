@@ -34,24 +34,39 @@ final class NonceStore {
 	 * signal to reject the request as a replay.
 	 *
 	 * @throws SigningException if the underlying cache reports that it could not persist the
-	 *                           claim. Deliberately not the same `false` a replay returns - a
-	 *                           persistence failure is an infrastructure problem, not tampering,
-	 *                           and RequestVerifier logs/reports the two differently. Collapsing
-	 *                           them would mean a cache outage gets logged as
+	 *                           claim, or if the cache itself throws while being asked
+	 *                           (`\Psr\SimpleCache\InvalidArgumentException`, a client-specific
+	 *                           connection failure). Deliberately not the same `false` a replay
+	 *                           returns - a persistence failure is an infrastructure problem, not
+	 *                           tampering, and RequestVerifier logs/reports the two differently.
+	 *                           Collapsing them would mean a cache outage gets logged as
 	 *                           `security_relevant: true` tampering purely because the code that
-	 *                           reports it cannot tell the two apart.
+	 *                           reports it cannot tell the two apart. Wrapped rather than left to
+	 *                           propagate raw, per this library's own rule for external calls.
 	 */
 	public function claim( string $consumerKey, string $token, string $nonce, string $timestamp, int $ttlSeconds ): bool {
 		$key = 'oauth1_nonce_' . hash('sha256', "{$consumerKey}\0{$token}\0{$nonce}\0{$timestamp}") . $this->cacheKeySuffix;
 
-		if ( $this->cache->has($key) ) {
-			return false;
-		}
-
-		if ( ! $this->cache->set($key, true, $ttlSeconds) ) {
+		try {
+			$alreadyClaimed = $this->cache->has($key);
+		} catch ( \Throwable $exception ) {
 			// No Credentials in scope to attach a consumer key to this exception - the same
 			// reason SignatureBaseString's own exceptions carry none; RequestVerifier's caller
 			// rewraps this with one, mirroring its existing baseString() catch block.
+			throw new SigningException('The underlying cache threw while checking a nonce claim', previous: $exception);
+		}
+
+		if ( $alreadyClaimed ) {
+			return false;
+		}
+
+		try {
+			$persisted = $this->cache->set($key, true, $ttlSeconds);
+		} catch ( \Throwable $exception ) {
+			throw new SigningException('The underlying cache threw while persisting a nonce claim', previous: $exception);
+		}
+
+		if ( ! $persisted ) {
 			throw new SigningException('Failed to persist a claimed nonce - the cache write did not succeed');
 		}
 

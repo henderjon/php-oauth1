@@ -22,8 +22,12 @@ use Psr\Log\NullLogger;
  * own replay protection into a denial-of-service vector against the legitimate request that
  * nonce belonged to.
  *
- * Every failure throws RequestVerificationException rather than returning false - fail-closed,
- * so a caller cannot accidentally treat "did not check" the same as "checked and passed". Every
+ * Every protocol-level failure - a bad signature, a mismatched consumer key, a stale timestamp,
+ * a replayed nonce - throws RequestVerificationException rather than returning false -
+ * fail-closed, so a caller cannot accidentally treat "did not check" the same as "checked and
+ * passed". A failure that means this class could not even attempt the check at all - a
+ * malformed URL, or the nonce store's own cache failing to persist a claim - throws
+ * SigningException instead; see that type's own docblock for why the two are kept apart. Every
  * one of those failures also logs an `error()` immediately before throwing, carrying a
  * `security_relevant` boolean: `true` only for InvalidSignature and NonceReplayed, the two
  * outcomes that are essentially unexplainable except as tampering or a replay attempt - every
@@ -67,6 +71,15 @@ final class RequestVerifier {
 
 	private const MAX_LOGGED_CONSUMER_KEY_LENGTH = 255;
 
+	/**
+	 * @param int $timestampToleranceSeconds Not validated against zero or negative - both fail
+	 *                                        closed rather than open. Zero means exact-match
+	 *                                        only; negative means `age > tolerance` is always
+	 *                                        true (`age` is never negative), so every request is
+	 *                                        rejected as TimestampOutOfWindow before nonce
+	 *                                        claiming ever runs. An unvalidated misconfiguration,
+	 *                                        not a security gap.
+	 */
 	public function __construct(
 		private readonly VerifierInterface $verifier,
 		private readonly NonceStore $nonceStore,
@@ -85,7 +98,10 @@ final class RequestVerifier {
 	 *                                                       `oauth_*` ones included, already
 	 *                                                       decoded to their original values.
 	 *
-	 * @throws RequestVerificationException
+	 * @throws RequestVerificationException a protocol-level failure - see VerificationFailureReason.
+	 * @throws SigningException a malformed $url, or the nonce store failing to persist a claim -
+	 *                          this class could not even attempt the check, not that it ran the
+	 *                          check and failed it.
 	 */
 	public function verify( string $httpMethod, string $url, Credentials $credentials, array $parameters ): void {
 		$oauthConsumerKey = $this->requireScalarParameter($parameters, 'oauth_consumer_key', null);
