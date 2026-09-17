@@ -1056,7 +1056,11 @@ interface VerifierInterface {
         single-server app; a load-balanced deployment needs something shared (Memcache, Redis)
         injected here instead. <code>$rsaPublicKey</code> is the key's own PEM content, not a
         path to it (see <a href="#RsaSha1Verifier"><code>RsaSha1Verifier</code></a>'s own note) -
-        required, and used, only for <code>SignatureMethod::RsaSha1</code>.
+        required, and used, only for <code>SignatureMethod::RsaSha1</code>. <code>$cacheKeySuffix</code>
+        is appended to every nonce cache key this verifier writes - pass a distinct value per
+        <code>RequestVerifier</code> instance sharing one cache (say, one Redis pool backing
+        several Tool Providers or several signature methods) to keep their nonce claims from
+        colliding with each other.
       </p>
       <p class="back-to-index"><a href="#index">↑ back to index</a></p>
     </div>
@@ -1332,6 +1336,12 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
     ): LaunchVerifier
 
 }</div>
+      <p>
+        <code>$nonceCache</code>/<code>$cacheKeySuffix</code>/<code>$timestampToleranceSeconds</code>
+        are passed straight through to <a href="#RequestVerifierFactory"><code>Oauth1\RequestVerifierFactory::forMethod()</code></a> -
+        see that method's own note, in particular for why <code>$cacheKeySuffix</code> matters
+        once one cache backs more than one <code>LaunchVerifier</code>.
+      </p>
       <p class="back-to-index"><a href="#index">↑ back to index</a></p>
     </div>
 
@@ -1366,7 +1376,17 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
         any of the three content checks above. See <a href="#Logging">Logging</a>.
       </p>
       <div class="throws-list">
-        <p>Throws <code>Oauth1\Exceptions\RequestVerificationException</code> for a signature/timestamp/nonce failure - never caught or wrapped here, so a caller distinguishing OAuth failures from Basic LTI content failures can catch it directly. Throws <a href="#BasicLti1Exceptions"><code>InvalidLaunchException</code></a> for a missing/invalid Basic LTI parameter, once the signature itself has already checked out.</p>
+        <p>Throws <code>Oauth1\Exceptions\RequestVerificationException</code> for a signature/timestamp/nonce failure, or <code>Oauth1\Exceptions\SigningException</code> for a malformed launch URL, the nonce store failing to persist a claim, or the OAuth signature method itself throwing one - neither is caught or wrapped here, so a caller distinguishing OAuth failures from Basic LTI content failures can catch either directly. Throws <a href="#BasicLti1Exceptions"><code>InvalidLaunchException</code></a> for a missing/invalid Basic LTI parameter, once the signature itself has already checked out.</p>
+        <p>
+          These three types share no common ancestor narrower than PHP's own <code>\RuntimeException</code>
+          - deliberately, per <a href="#BasicLti1Exceptions">BasicLti1\Exceptions\*</a>'s own note on why the
+          two hierarchies stay separate. A caller who only needs "did this launch succeed, yes or no,"
+          without distinguishing which of the three reasons, can catch <code>\RuntimeException</code> around
+          this call - every exception this library throws extends it - rather than writing three catch
+          blocks. That is a wider net than this library's own exceptions alone, so it also catches a bug
+          elsewhere in the same <code>try</code> block; keep the block scoped to just this call if that
+          distinction matters.
+        </p>
       </div>
       <p class="back-to-index"><a href="#index">↑ back to index</a></p>
     </div>

@@ -6,6 +6,7 @@ use Oauth1\Exceptions\SigningException;
 use Oauth1\Fakes\FailingWriteCache;
 use Oauth1\Fakes\InMemoryCache;
 use Oauth1\Fakes\ThrowingCache;
+use Oauth1\Fakes\TtlRecordingCache;
 use PHPUnit\Framework\TestCase;
 
 class NonceStoreTest extends TestCase {
@@ -31,6 +32,20 @@ class NonceStoreTest extends TestCase {
 
 		$this->assertTrue($storeA->claim('consumer', 'token', 'nonce', '137131201', 300));
 		$this->assertTrue($storeB->claim('consumer', 'token', 'nonce', '137131201', 300));
+	}
+
+	/**
+	 * PSR-16 only guarantees support for keys up to 64 characters - a label prefix on top of the
+	 * 64-character SHA-256 hex digest would push every key past that guarantee before a caller's
+	 * own $cacheKeySuffix is even added.
+	 */
+	public function testClaimUsesAKeyThatFitsPsr16sGuaranteedMinimumLength(): void {
+		$cache = new TtlRecordingCache;
+		$store = new NonceStore($cache);
+
+		$store->claim('consumer', 'token', 'nonce', '137131201', 300);
+
+		$this->assertLessThanOrEqual(64, strlen($cache->lastKey));
 	}
 
 	/**

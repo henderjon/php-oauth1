@@ -25,9 +25,12 @@ use Psr\Log\NullLogger;
  * Every protocol-level failure - a bad signature, a mismatched consumer key, a stale timestamp,
  * a replayed nonce - throws RequestVerificationException rather than returning false -
  * fail-closed, so a caller cannot accidentally treat "did not check" the same as "checked and
- * passed". A failure that means this class could not even attempt the check at all - a
- * malformed URL, or the nonce store's own cache failing to persist a claim - throws
- * SigningException instead; see that type's own docblock for why the two are kept apart. Every
+ * passed". A failure that means this class could not even attempt or complete the check at all -
+ * a malformed URL, the nonce store's own cache failing to persist a claim, or the injected
+ * VerifierInterface itself throwing one (RsaSha1Verifier does, for an unreadable key or
+ * openssl_verify() rejecting the input) - throws SigningException instead, propagated unmodified
+ * from wherever it actually originated; see that type's own docblock for why the two are kept
+ * apart. Every
  * one of those failures also logs an `error()` immediately before throwing, carrying a
  * `security_relevant` boolean: `true` only for InvalidSignature and NonceReplayed, the two
  * outcomes that are essentially unexplainable except as tampering or a replay attempt - every
@@ -99,9 +102,12 @@ final class RequestVerifier {
 	 *                                                       decoded to their original values.
 	 *
 	 * @throws RequestVerificationException a protocol-level failure - see VerificationFailureReason.
-	 * @throws SigningException a malformed $url, or the nonce store failing to persist a claim -
-	 *                          this class could not even attempt the check, not that it ran the
-	 *                          check and failed it.
+	 * @throws SigningException a malformed $url, the nonce store failing to persist a claim, or
+	 *                          the injected VerifierInterface itself throwing one (RsaSha1Verifier
+	 *                          does, for an unreadable public key or openssl_verify() rejecting
+	 *                          the input outright) - propagated unmodified, not caught here. Every
+	 *                          case means this class could not even attempt or complete the
+	 *                          check, not that it ran the check and failed it.
 	 */
 	public function verify( string $httpMethod, string $url, Credentials $credentials, array $parameters ): void {
 		$oauthConsumerKey = $this->requireScalarParameter($parameters, 'oauth_consumer_key', null);

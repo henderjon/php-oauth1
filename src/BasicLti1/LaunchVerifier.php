@@ -31,9 +31,11 @@ use Psr\Log\NullLogger;
  * @throws RequestVerificationException for a signature/timestamp/nonce failure - never caught or
  *         wrapped here, so a caller distinguishing OAuth failures from Basic LTI content
  *         failures can catch it directly.
- * @throws SigningException for a malformed launch URL, or the nonce store failing to persist a
- *         claim - propagated uncaught from the delegated Oauth1\RequestVerifier::verify() call,
- *         same as RequestVerificationException above.
+ * @throws SigningException for a malformed launch URL, the nonce store failing to persist a
+ *         claim, or the OAuth signature method itself throwing one (RsaSha1Verifier does, for an
+ *         unreadable key or openssl_verify() rejecting the input, though LaunchVerifierFactory
+ *         hard-wires HMAC-SHA1 today) - propagated uncaught from the delegated
+ *         Oauth1\RequestVerifier::verify() call, same as RequestVerificationException above.
  * @throws InvalidLaunchException for a missing/invalid Basic LTI parameter, once the signature
  *         itself has already checked out.
  */
