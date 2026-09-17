@@ -5,9 +5,9 @@ namespace Oauth1\Fakes;
 use Psr\SimpleCache\CacheInterface;
 
 /**
- * A real, in-memory PSR-16 cache like InMemoryCache, but also records the $ttl passed to the
- * most recent set() call - so a test can assert on the exact TTL RequestVerifier computes for a
- * nonce claim without needing to simulate real expiry.
+ * A real, in-memory PSR-16 cache like InMemoryCache, but also records the $ttl and $key passed
+ * to the most recent set() call - so a test can assert on the exact TTL RequestVerifier computes
+ * for a nonce claim, or on the cache key's own shape, without needing to simulate real expiry.
  */
 final class TtlRecordingCache implements CacheInterface {
 
@@ -15,6 +15,7 @@ final class TtlRecordingCache implements CacheInterface {
 	private array $values = [];
 
 	public \DateInterval|int|null $lastTtl = null;
+	public ?string $lastKey = null;
 
 	public function get( string $key, mixed $default = null ): mixed {
 		return $this->values[$key] ?? $default;
@@ -23,6 +24,7 @@ final class TtlRecordingCache implements CacheInterface {
 	public function set( string $key, mixed $value, \DateInterval|int|null $ttl = null ): bool {
 		$this->values[$key] = $value;
 		$this->lastTtl       = $ttl;
+		$this->lastKey       = $key;
 
 		return true;
 	}

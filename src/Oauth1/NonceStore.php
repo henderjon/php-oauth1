@@ -20,6 +20,14 @@ use Psr\SimpleCache\CacheInterface;
  *
  * A cache that *honestly reports* a write failure is a different case entirely, and is not
  * silently treated the same as a successful claim - see claim()'s own docblock.
+ *
+ * The cache key is exactly a 64-character SHA-256 hex digest (plus `$cacheKeySuffix`, if the
+ * caller supplies one) - not `hash('sha256', ...)` prefixed with a human-readable label. PSR-16
+ * only guarantees support for keys of A-Z/a-z/0-9/_/. up to 64 characters; a label prefix would
+ * push every key past that guarantee before a caller's own suffix is even added, risking
+ * rejection or truncation-driven collisions on a minimally-compliant cache client. The digest
+ * alone is already effectively collision-resistant for this class's own inputs, so the label
+ * bought debuggability, not correctness - not worth spending the guarantee on.
  */
 final class NonceStore {
 
@@ -45,7 +53,7 @@ final class NonceStore {
 	 *                           propagate raw, per this library's own rule for external calls.
 	 */
 	public function claim( string $consumerKey, string $token, string $nonce, string $timestamp, int $ttlSeconds ): bool {
-		$key = 'oauth1_nonce_' . hash('sha256', "{$consumerKey}\0{$token}\0{$nonce}\0{$timestamp}") . $this->cacheKeySuffix;
+		$key = hash('sha256', "{$consumerKey}\0{$token}\0{$nonce}\0{$timestamp}") . $this->cacheKeySuffix;
 
 		try {
 			$alreadyClaimed = $this->cache->has($key);

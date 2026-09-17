@@ -12,6 +12,7 @@ use Harness\Config;
 use Harness\FileCache;
 use Oauth1\Credentials;
 use Oauth1\Exceptions\RequestVerificationException;
+use Oauth1\Exceptions\SigningException;
 
 function page( string $body ): void {
 	echo '<!doctype html><html><head><title>Tool Provider</title></head><body>';
@@ -42,6 +43,17 @@ try {
 	page(
 		'<p style="color:red"><strong>REJECTED - invalid Basic LTI launch</strong></p>'
 		. '<p>Reason: ' . htmlspecialchars($exception->getReason()->name) . '</p>'
+		. '<p>' . htmlspecialchars($exception->getMessage()) . '</p>',
+	);
+	exit;
+} catch ( SigningException $exception ) {
+	// Thrown when verification could not even be attempted or completed - a malformed launch
+	// URL, or (as is realistic for this harness's own file-backed nonce cache) a failed write -
+	// not that a check ran and failed it. A real deployment sees this on infrastructure trouble
+	// (a cache outage), not a rejected launch, so it's shown distinctly from the two REJECTED
+	// pages above rather than folded into either.
+	page(
+		'<p style="color:red"><strong>ERROR - could not complete verification</strong></p>'
 		. '<p>' . htmlspecialchars($exception->getMessage()) . '</p>',
 	);
 	exit;
