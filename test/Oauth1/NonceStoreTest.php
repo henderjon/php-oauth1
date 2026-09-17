@@ -5,6 +5,7 @@ namespace Oauth1;
 use Oauth1\Exceptions\SigningException;
 use Oauth1\Fakes\FailingWriteCache;
 use Oauth1\Fakes\InMemoryCache;
+use Oauth1\Fakes\ThrowingCache;
 use PHPUnit\Framework\TestCase;
 
 class NonceStoreTest extends TestCase {
@@ -43,6 +44,33 @@ class NonceStoreTest extends TestCase {
 		$this->expectException(SigningException::class);
 
 		$store->claim('consumer', 'token', 'nonce', '137131201', 300);
+	}
+
+	/**
+	 * A cache client that throws instead of returning false must not propagate raw - it is
+	 * wrapped into this library's own exception type, per AGENTS.md's rule for external calls,
+	 * and stays distinguishable from an ordinary write-failure via getPrevious().
+	 */
+	public function testClaimWrapsAnExceptionTheCacheThrowsWhileChecking(): void {
+		$store = new NonceStore(new ThrowingCache(throwOnHas: true));
+
+		try {
+			$store->claim('consumer', 'token', 'nonce', '137131201', 300);
+			$this->fail('Expected a SigningException');
+		} catch ( SigningException $exception ) {
+			$this->assertInstanceOf(\RuntimeException::class, $exception->getPrevious());
+		}
+	}
+
+	public function testClaimWrapsAnExceptionTheCacheThrowsWhilePersisting(): void {
+		$store = new NonceStore(new ThrowingCache(throwOnSet: true));
+
+		try {
+			$store->claim('consumer', 'token', 'nonce', '137131201', 300);
+			$this->fail('Expected a SigningException');
+		} catch ( SigningException $exception ) {
+			$this->assertInstanceOf(\RuntimeException::class, $exception->getPrevious());
+		}
 	}
 
 }

@@ -184,6 +184,26 @@ class RequestVerifierTest extends TestCase {
 	}
 
 	/**
+	 * The mirror image of the future-skew case above: a client clock reading 300s BEHIND the
+	 * server (the maximum past skew the tolerance allows) sits right at the trailing edge of the
+	 * timestamp window at the moment it's claimed - (timestamp + tolerance) - now = 0, floored to
+	 * the documented minimum of 1 rather than left at zero, which PSR-16 leaves
+	 * implementation-defined.
+	 */
+	public function testVerifyClaimsTheNonceForAtLeastOneSecondAtTheTrailingEdgeOfTheWindow(): void {
+		$serverNow = new FixedClock(new \DateTimeImmutable('@137131201')); // real time = T0
+		// Client's clock reads 300s behind the server - the maximum past skew tolerance allows.
+		$clientClock = new FixedClock(new \DateTimeImmutable('@137130901')); // T0 - 300
+		$parameters  = $this->sign($clientClock);
+
+		$cache = new TtlRecordingCache;
+		$this->verifier($serverNow, 300, cache: $cache)->verify('POST', self::URL, $this->credentials(), $parameters);
+
+		// (timestamp + tolerance) - now = (T0 - 300 + 300) - T0 = 0, floored to 1.
+		$this->assertSame(1, $cache->lastTtl);
+	}
+
+	/**
 	 * A failed cache write must not be conflated with a successful claim or with NonceReplayed -
 	 * see NonceStore::claim()'s own docblock. Logged and rethrown with the real consumer key
 	 * attached, mirroring baseString()'s existing rewrap pattern.

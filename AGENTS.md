@@ -25,7 +25,7 @@ make phpstan                            # run static analysis (level 8, config i
 make test                               # both of the above
 vendor/bin/phpunit --filter TestClassName   # run one test class
 composer update -W vendor/package       # update one dependency with its own dependents
-php example/app.php                     # run the example application (see example/README.md)
+./example/run.sh                        # run the example harness (see example/README.md)
 ```
 
 CI (`.github/workflows/ci.yml`) runs `composer audit --locked`, `vendor/bin/phpunit`, and
@@ -183,10 +183,12 @@ its own class.
   `src/` and does not touch `docs/index.html` should be treated as incomplete unless the change is purely internal
   (see the exclusion list below) - and even then, double-check rather than assume.
 - It documents the public surface only. Internal collaborators - the signature base string builder
-  (`SignatureBaseString`), the percent-encoding helper (`PercentEncoding`), and `NonceStore` (which wraps a PSR-16
-  cache the same way `php-oidc`'s `AuthorizationStateStore` does) - are deliberately excluded. Everything else
-  under `Oauth1\`, `Oauth1\Exceptions\`, `BasicLti1\`, and `BasicLti1\Exceptions\` is documented, including the
-  factories, both signer/verifier interfaces and their concrete implementations, and every value object and enum.
+  (`SignatureBaseString`), the percent-encoding helper (`PercentEncoding`), `NonceStore` (which wraps a PSR-16
+  cache the same way `php-oidc`'s `AuthorizationStateStore` does), and the two logging-safety helpers `Truncate`
+  and `PemPreview` (used only to make this library's own log lines safe, not meant to be called by a consuming
+  application) - are deliberately excluded. Everything else under `Oauth1\`, `Oauth1\Exceptions\`, `BasicLti1\`,
+  and `BasicLti1\Exceptions\` is documented, including the factories, both signer/verifier interfaces and their
+  concrete implementations, and every value object and enum.
 
 ## Git
 

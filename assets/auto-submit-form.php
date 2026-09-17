@@ -36,6 +36,7 @@ declare(strict_types=1);
 assert(isset($launch) && $launch instanceof \BasicLti1\LaunchRequest);
 assert(isset($cspNonce) && is_string($cspNonce));
 assert(!isset($target) || is_string($target));
+assert(isset($submitDelay) && is_int($submitDelay) && $submitDelay >= 0);
 
 function escape( string $value ): string {
 	return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
