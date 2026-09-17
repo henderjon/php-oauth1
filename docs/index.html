@@ -1066,8 +1066,9 @@ interface VerifierInterface {
       <p>
         Verifies one incoming request: recomputes its signature from the parameters the caller
         already parsed and compares it, checks <code>oauth_version</code> when present, and - for
-        HMAC-SHA1/RSA-SHA1 - rejects a timestamp outside the configured tolerance or an
-        already-claimed nonce (RFC 5849 &sect;3.2, &sect;3.3).
+        HMAC-SHA1/RSA-SHA1 - rejects a non-canonical or malformed <code>oauth_timestamp</code>, a
+        timestamp outside the configured tolerance, or an already-claimed nonce (RFC 5849
+        &sect;3.2, &sect;3.3).
       </p>
       <div class="alert-box">
         Fail-closed: every failure throws <a href="#Oauth1Exceptions"><code>RequestVerificationException</code></a>
@@ -1083,6 +1084,21 @@ interface VerifierInterface {
         nonce before checking the signature would let an attacker who cannot sign anything still
         burn a legitimate nonce with a forged request that copies them, denying the real request
         that nonce belonged to. This ordering is deliberate, not incidental.
+      </div>
+      <div class="alert-box">
+        <strong>The nonce stays claimed for the full timestamp window, not a flat tolerance
+        from claim time.</strong> A client's clock reading ahead of the server (ordinary skew,
+        within the tolerance already allowed) makes those two different - counting from claim
+        time would let the cache entry expire before the request naturally stops being "fresh,"
+        letting a captured, unmodified request replay successfully in that gap with no forged
+        signature needed. The TTL passed to <code>NonceStore</code> is computed from
+        <code>oauth_timestamp + timestampToleranceSeconds - now</code>, not from
+        <code>timestampToleranceSeconds</code> alone. A cache write that honestly fails throws
+        rather than being treated as a successful claim or a replay - logged and rethrown as
+        <a href="#Oauth1Exceptions"><code>SigningException</code></a>
+        (<code>security_relevant: false</code>), the same reasoning as
+        <a href="#RsaSha1Verifier"><code>RsaSha1Verifier</code></a>'s <code>openssl_verify()</code>
+        <code>-1</code> case: an infrastructure problem is not tampering.
       </div>
       <div class="method-sig">final class RequestVerifier {
 
@@ -1123,6 +1139,7 @@ interface VerifierInterface {
     case UnsupportedVersion;
     case UnsupportedSignatureMethod;
     case ConsumerKeyMismatch;
+    case MalformedTimestamp;
     case TimestampOutOfWindow;
     case NonceReplayed;
     case InvalidSignature;

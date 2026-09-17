@@ -5,10 +5,13 @@ namespace Oauth1;
 use Oauth1\Exceptions\RequestVerificationException;
 use Oauth1\Exceptions\SigningException;
 use Oauth1\Fakes\ArrayLogger;
+use Oauth1\Fakes\FailingWriteCache;
 use Oauth1\Fakes\FixedClock;
 use Oauth1\Fakes\FixedNonceGenerator;
 use Oauth1\Fakes\InMemoryCache;
+use Oauth1\Fakes\TtlRecordingCache;
 use PHPUnit\Framework\TestCase;
+use Psr\SimpleCache\CacheInterface;
 
 class RequestVerifierTest extends TestCase {
 
@@ -26,10 +29,10 @@ class RequestVerifierTest extends TestCase {
 		return [ ...$requestParameters, ...$signed->oauthParameters ];
 	}
 
-	private function verifier( ?FixedClock $clock = null, int $toleranceSeconds = 300, ?ArrayLogger $logger = null ): RequestVerifier {
+	private function verifier( ?FixedClock $clock = null, int $toleranceSeconds = 300, ?ArrayLogger $logger = null, ?CacheInterface $cache = null ): RequestVerifier {
 		return new RequestVerifier(
 			new HmacSha1Signer,
-			new NonceStore(new InMemoryCache),
+			new NonceStore($cache ?? new InMemoryCache),
 			$clock ?? new FixedClock(new \DateTimeImmutable('@137131201')),
 			$toleranceSeconds,
 			$logger ?? new ArrayLogger,
@@ -125,6 +128,83 @@ class RequestVerifierTest extends TestCase {
 		$verifier->verify('POST', self::URL, $this->credentials(), $parameters);
 
 		$this->assertSame('oauth1.request_verified', $logger->recordsAt('debug')[array_key_last($logger->recordsAt('debug'))]['message']);
+	}
+
+	/**
+	 * RFC 5849 §3.3: oauth_timestamp MUST be a positive integer. PHP's (int) cast silently reads
+	 * only a value's leading numeric prefix, so a trailing suffix must be rejected before the
+	 * tolerance check ever casts it - otherwise it would pass tolerance as "the same" timestamp
+	 * while claiming a different NonceStore entry than the canonical form would.
+	 */
+	public function testVerifyRejectsATimestampWithATrailingNonDigitSuffix(): void {
+		$clock      = new FixedClock(new \DateTimeImmutable('@137131201'));
+		$parameters = $this->sign($clock);
+		$parameters['oauth_timestamp'] .= 'garbage';
+
+		[ $exception, $logger ] = $this->assertRejected(
+			fn ( $logger ) => $this->verifier($clock, logger: $logger)->verify('POST', self::URL, $this->credentials(), $parameters),
+		);
+
+		$this->assertSame(VerificationFailureReason::MalformedTimestamp, $exception->getReason());
+		$this->assertLoggedError($logger, VerificationFailureReason::MalformedTimestamp, false);
+	}
+
+	public function testVerifyRejectsATimestampWithALeadingZero(): void {
+		$clock      = new FixedClock(new \DateTimeImmutable('@137131201'));
+		$parameters = $this->sign($clock);
+		$parameters['oauth_timestamp'] = '0' . $parameters['oauth_timestamp'];
+
+		[ $exception ] = $this->assertRejected(
+			fn ( $logger ) => $this->verifier($clock, logger: $logger)->verify('POST', self::URL, $this->credentials(), $parameters),
+		);
+
+		$this->assertSame(VerificationFailureReason::MalformedTimestamp, $exception->getReason());
+	}
+
+	/**
+	 * The nonce must stay claimed until now() reaches oauth_timestamp + tolerance, not for a
+	 * flat tolerance window counted from claim time - otherwise a client clock reading ahead of
+	 * the server (ordinary skew, within the tolerance this class already allows) creates a
+	 * window where a captured, unmodified request replays successfully after its nonce entry
+	 * expired too early. Asserted directly against the TTL passed to the cache, since the
+	 * in-memory test cache does not itself honor TTLs.
+	 */
+	public function testVerifyClaimsTheNonceForTheFullTimestampWindowNotAFlatToleranceFromNow(): void {
+		$serverNow = new FixedClock(new \DateTimeImmutable('@137131201')); // real time = T0
+		// Client's clock reads 300s ahead of the server - the maximum skew 300s tolerance allows.
+		$clientClock = new FixedClock(new \DateTimeImmutable('@137131501')); // T0 + 300
+		$parameters  = $this->sign($clientClock);
+
+		$cache = new TtlRecordingCache;
+		$this->verifier($serverNow, 300, cache: $cache)->verify('POST', self::URL, $this->credentials(), $parameters);
+
+		// A flat tolerance-from-now TTL would be 300; this must instead survive until
+		// (timestamp + tolerance) - now = (T0 + 300 + 300) - T0 = 600.
+		$this->assertSame(600, $cache->lastTtl);
+	}
+
+	/**
+	 * A failed cache write must not be conflated with a successful claim or with NonceReplayed -
+	 * see NonceStore::claim()'s own docblock. Logged and rethrown with the real consumer key
+	 * attached, mirroring baseString()'s existing rewrap pattern.
+	 */
+	public function testVerifyLogsAnErrorAndRethrowsWhenTheNonceCacheWriteFails(): void {
+		$clock      = new FixedClock(new \DateTimeImmutable('@137131201'));
+		$logger     = new ArrayLogger;
+		$parameters = $this->sign($clock);
+
+		try {
+			$this->verifier($clock, logger: $logger, cache: new FailingWriteCache)
+				->verify('POST', self::URL, $this->credentials(), $parameters);
+			$this->fail('Expected a SigningException');
+		} catch ( SigningException $exception ) {
+			$errors = $logger->recordsAt('error');
+			$this->assertCount(1, $errors);
+			$this->assertSame('oauth1.verifying_failed', $errors[0]['message']);
+			$this->assertFalse($errors[0]['context']['security_relevant']);
+			$this->assertSame('key', $exception->getConsumerKey());
+			$this->assertSame($exception, $errors[0]['context']['exception']);
+		}
 	}
 
 	public function testVerifyRejectsATimestampOutsideTheTolerance(): void {

@@ -13,6 +13,7 @@ enum VerificationFailureReason {
 	case UnsupportedVersion;
 	case UnsupportedSignatureMethod;
 	case ConsumerKeyMismatch;
+	case MalformedTimestamp;
 	case TimestampOutOfWindow;
 	case NonceReplayed;
 	case InvalidSignature;

@@ -2,6 +2,8 @@
 
 namespace Oauth1;
 
+use Oauth1\Exceptions\SigningException;
+use Oauth1\Fakes\FailingWriteCache;
 use Oauth1\Fakes\InMemoryCache;
 use PHPUnit\Framework\TestCase;
 
@@ -28,6 +30,19 @@ class NonceStoreTest extends TestCase {
 
 		$this->assertTrue($storeA->claim('consumer', 'token', 'nonce', '137131201', 300));
 		$this->assertTrue($storeB->claim('consumer', 'token', 'nonce', '137131201', 300));
+	}
+
+	/**
+	 * A cache that honestly reports a write failure must not be treated the same as a
+	 * successful claim - that would silently disable replay protection during cache trouble,
+	 * the opposite of this class's own fail-closed purpose.
+	 */
+	public function testClaimThrowsRatherThanReturningTrueWhenTheCacheWriteFails(): void {
+		$store = new NonceStore(new FailingWriteCache);
+
+		$this->expectException(SigningException::class);
+
+		$store->claim('consumer', 'token', 'nonce', '137131201', 300);
 	}
 
 }
