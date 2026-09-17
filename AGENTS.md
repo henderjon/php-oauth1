@@ -3,13 +3,13 @@
 ## Project Overview
 
 php-oauth1 is a small, dependency-light OAuth 1.0 (RFC 5849) signing and verification library for PHP 8.1+. It is a
-companion to `php-oidc` (OAuth 2.0 / OpenID Connect) for the older one-legged and two-legged OAuth 1.0 protocol that
-integrations such as Basic LTI 1.0/1.1 still require: form-signed tool launches and, for LTI 1.1's Basic Outcomes
-Service, POX/XML requests signed via the OAuth Body Hash extension (`oauth_body_hash`, all OAuth parameters forced
-into the `Authorization` header). Solve the common case - signing and verifying these one-legged, no-token requests
-- well, rather than chasing full three-legged OAuth 1.0 provider coverage. This is library code consumed by other
-applications, not an application itself. A change here affects every consumer, so keep the public API small,
-generic, and stable. Breaking changes are allowed but must be deliberate and noted, never accidental.
+companion to `php-oidc` (OAuth 2.0 / OpenID Connect) for the older one-legged OAuth 1.0 protocol that integrations
+such as Basic LTI 1.0/1.1 still require: form-signed tool launches, currently. Solve the common case - signing and
+verifying these one-legged, no-token requests - well, rather than chasing full three-legged OAuth 1.0 provider
+coverage or LTI 1.1's Basic Outcomes Service (see Architecture for what that would add and why it is out of scope
+today). This is library code consumed by other applications, not an application itself. A change here affects
+every consumer, so keep the public API small, generic, and stable. Breaking changes are allowed but must be
+deliberate and noted, never accidental.
 
 Reference copies of the specs this library implements against live in `specs/`: RFC 5849 (OAuth 1.0 Protocol),
 the Basic LTI v1.0 Implementation Guide, and the LTI v1.1 Implementation Guide (which added the Basic Outcomes
@@ -45,21 +45,59 @@ Markdown, 4 otherwise).
 
 ## Architecture
 
-This repository is pre-implementation: there is no `composer.json`, `src/`, or `test/` yet, only `AGENTS.md` and
-the reference `specs/` directory. The design below is the intended shape based on those specs, not yet-built fact -
-treat it as a starting point to confirm or revise once real classes exist, not as settled architecture to match
-blindly.
+Two namespaces, `Oauth1\` and `BasicLti1\`, mirroring `src/Oauth1/` and `src/BasicLti1/` 1:1. `BasicLti1\` is a
+thin layer on top of `Oauth1\` - every Basic LTI launch is just a signed, one-legged OAuth 1.0 request
+underneath (no token, `oauth_callback` set to `about:blank`), plus a handful of mandatory launch parameters.
 
-Expected concerns, kept separate the same way `php-oidc` separates its collaborators:
+`Oauth1\` - RFC 5849 core:
 
-- A signature base string builder - request method, base string URI, and normalized/percent-encoded parameters
-  per RFC 5849 §3.4.1, independent of which signing method consumes it.
-- One signer per method (`HMAC-SHA1`, `RSA-SHA1`, `PLAINTEXT`), each small and independently testable, rather than
-  one class branching on `oauth_signature_method`.
-- A body-hash signer for the OAuth Body Hash extension LTI 1.1's Basic Outcomes Service requires (SHA-1 of the raw
-  XML body, forcing all OAuth parameters into the `Authorization` header).
-- A request verifier that recomputes a signature from an incoming request and compares it, for the Tool Provider
-  side of an LTI-style integration.
+- `Credentials` - the four values a request signs or verifies against (consumer key/secret, token/token secret).
+- `SignatureMethod` - the three RFC 5849 §3.4 methods (HMAC-SHA1, RSA-SHA1, PLAINTEXT).
+- `SignerInterface` / `VerifierInterface` - one pair per method. `HmacSha1Signer` and `PlaintextSigner` each
+  implement both (a shared secret signs and verifies); `RsaSha1Signer`/`RsaSha1Verifier` are separate classes,
+  since RFC 5849 only ever issues a client its own private key, never the public key that verifies against it.
+- `SignatureBaseString` / `PercentEncoding` - the RFC 5849 §3.4.1/§3.6 base string and percent-encoding rules, as
+  pure, unlogged computations shared by every signature method.
+- `RequestSigner` / `RequestSignerFactory` - assembles the `oauth_*` parameters for one outgoing request and
+  delegates the signature itself to the injected `SignerInterface`.
+- `RequestVerifier` / `RequestVerifierFactory` - recomputes and checks an incoming request's signature, plus
+  `oauth_version` and the consumer key, and - for HMAC-SHA1/RSA-SHA1 - a canonical, in-tolerance timestamp and
+  nonce replay. The nonce is claimed only after the signature checks out, and its cache TTL spans the request's
+  own timestamp window, not a flat tolerance from claim time - see the class's own docblock for why either
+  ordering shortcut is a denial-of-service or replay vector, not just a tidiness concern.
+- `NonceStore` - a thin PSR-16 cache wrapper `RequestVerifier` uses for replay detection. Internal collaborator,
+  not part of the public surface (see Documentation).
+- `NonceGeneratorInterface` / `RandomNonceGenerator`, `CurrentClock` - injectable nonce/time sources, so tests
+  use fixed ones instead of real randomness/wall-clock time.
+- `Truncate` / `PemPreview` - logging-safety helpers: capping an unbounded, not-yet-validated value before it
+  reaches a log line, and describing an unreadable RSA key from its PEM boilerplate alone, never its bytes.
+- `LogLevelFilterLogger` / `LogLevelFilterMode` - a generic PSR-3 decorator, ported from `php-oidc`, for routing
+  only chosen log levels to a caller's own logger. Nothing about it is OAuth1-specific.
+- `Exceptions\OAuth1Exception` (base), `SigningException` (a signer or verifier cannot even attempt one - a
+  malformed URL, an unreadable RSA key, openssl rejecting the input, a nonce-cache write failure),
+  `RequestVerificationException` (a signature was computed and checked, and failed - see
+  `VerificationFailureReason` for every reason).
+
+`BasicLti1\` - the launch layer:
+
+- `Launch` - the fixed parameter names/values (`lti_message_type`, `lti_version`, `resource_link_id`) every
+  Basic LTI launch requires.
+- `LaunchRequest` - a signed launch's URL and parameters, data only - deliberately no markup; see its own
+  docblock for why rendering it as an auto-submitting form is the consuming application's job, not this
+  library's (`assets/auto-submit-form.php` is a copyable template for that job, not part of the library itself).
+- `LaunchRequestBuilder` / `LaunchRequestBuilderFactory` - builds one launch: sets `lti_message_type`/
+  `lti_version` regardless of what the caller supplied, requires `resource_link_id`, signs the whole parameter
+  set via `Oauth1\RequestSigner` (the factory hard-wires HMAC-SHA1, the only method Basic LTI allows).
+- `LaunchVerifier` / `LaunchVerifierFactory` - verifies an incoming launch: delegates OAuth 1.0 verification to
+  `Oauth1\RequestVerifier` first and lets its exception propagate uncaught, then checks the Basic LTI-specific
+  parameters only once the signature has already checked out.
+- `Exceptions\BasicLti1Exception` (base), `InvalidLaunchException` (a Basic LTI parameter is missing or wrong,
+  independent of whether the request was signed correctly).
+
+Out of scope, deliberately: LTI 1.1's Basic Outcomes Service and the OAuth Body Hash extension
+(`oauth_body_hash`, POX/XML requests with every OAuth parameter forced into the `Authorization` header). Stopped
+short of it on purpose when this library was first built - revisit only as a deliberate, separate decision, not
+an assumption baked into new work.
 
 Follow `php-oidc`'s composition-over-inheritance convention here too: small collaborators wired together by a
 factory, no `new` outside factories/tests, no capability grown as a private method on some larger class instead of
