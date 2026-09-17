@@ -152,6 +152,23 @@ final class RequestVerifier {
 		// oauth_nonce's presence is required up front too, even though claiming it is deferred.
 		$this->requireScalarParameter($parameters, 'oauth_nonce', $credentials->consumerKey);
 
+		// RFC 5849 §3.3: oauth_timestamp MUST be a positive integer - checked as a canonical
+		// decimal string (no sign, no leading zero, no decimal point, no trailing garbage)
+		// before it is ever cast to int. PHP's (int) cast silently reads only a value's leading
+		// numeric prefix ((int) "137131201garbage" is 137131201, no warning), so without this
+		// check a client could send several distinct wire strings that all pass the tolerance
+		// check below as "the same" timestamp while each claiming a separate NonceStore entry -
+		// NonceStore hashes the raw string, not the cast int - undermining the one-claim-per-
+		// nonce guarantee this class exists to provide.
+		if ( preg_match('/^[1-9][0-9]*$/', $timestamp) !== 1 ) {
+			$this->fail(
+				"Timestamp \"$timestamp\" is not a canonical positive integer",
+				VerificationFailureReason::MalformedTimestamp,
+				false,
+				$credentials->consumerKey,
+			);
+		}
+
 		$age = abs($this->clock->now()->getTimestamp() - (int) $timestamp);
 		if ( $age > $this->timestampToleranceSeconds ) {
 			$this->fail(
@@ -170,7 +187,39 @@ final class RequestVerifier {
 		$timestamp = $this->requireScalarParameter($parameters, 'oauth_timestamp', $credentials->consumerKey);
 		$nonce     = $this->requireScalarParameter($parameters, 'oauth_nonce', $credentials->consumerKey);
 
-		if ( ! $this->nonceStore->claim($credentials->consumerKey, $credentials->token, $nonce, $timestamp, $this->timestampToleranceSeconds) ) {
+		// The nonce must stay claimed for exactly as long as this same request would still pass
+		// the tolerance check above if replayed - i.e. until now() reaches $timestamp +
+		// $timestampToleranceSeconds - not for a flat $timestampToleranceSeconds counted from
+		// claim time. A client's clock reading ahead of the server's (ordinary skew, within the
+		// tolerance this class already allows) makes those two different: counting from claim
+		// time would let the cache entry expire before the request naturally stops being
+		// "fresh," leaving a window where a captured, unmodified request - no forged signature
+		// needed - replays successfully. Clamped to at least 1 second so a request timestamped
+		// at the trailing edge of the tolerance window (age close to the maximum, from the past)
+		// does not compute a zero or negative TTL, which PSR-16 leaves implementation-defined.
+		$ttlSeconds = max(1, ( (int) $timestamp + $this->timestampToleranceSeconds ) - $this->clock->now()->getTimestamp());
+
+		try {
+			$claimed = $this->nonceStore->claim($credentials->consumerKey, $credentials->token, $nonce, $timestamp, $ttlSeconds);
+		} catch ( SigningException $exception ) {
+			// Rewrapped for the same reason as baseString()'s matching catch block: NonceStore
+			// has no Credentials in scope to attach a consumer key to its own exception. A
+			// failure to persist the claim is an infrastructure problem, not tampering - thrown
+			// rather than returned as `false` so it cannot be conflated with NonceReplayed below
+			// and logged as security_relevant: true, the same mistake fixed once already for
+			// RsaSha1Verifier's openssl_verify() -1 case.
+			$rewrapped = new SigningException($exception->getMessage(), $credentials->consumerKey, $exception);
+
+			$this->logger->error('oauth1.verifying_failed', [
+				'consumer_key' => $this->loggableConsumerKey($credentials->consumerKey),
+				'exception' => $rewrapped,
+				'security_relevant' => false,
+			]);
+
+			throw $rewrapped;
+		}
+
+		if ( ! $claimed ) {
 			$this->fail('Nonce has already been used', VerificationFailureReason::NonceReplayed, true, $credentials->consumerKey);
 		}
 	}
