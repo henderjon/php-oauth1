@@ -564,8 +564,8 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
           on a successful call. <code>RequestVerifier</code>/<code>RequestSigner</code>'s
           <code>oauth1.signature_base_string_built</code> debug line is a bare trace, like every
           other happy-path <code>debug</code> line - the hash itself only becomes reachable via
-          <code>Oauth1\Exceptions\OAuth1Exception::getBaseStringSha256()</code>, on
-          <code>RequestVerificationException</code>/<code>SigningException</code> instances thrown
+          <code>getBaseStringSha256()</code> on a
+          <code>RequestVerificationException</code>/<code>SigningException</code> instance thrown
           after the base string this failure concerns was already built. A caller comparing what
           two parties computed reads it off a caught exception on an actual failure, never off a
           debug log line that would otherwise carry it on every request, success included - see
@@ -1200,20 +1200,28 @@ final class RandomNonceGenerator implements NonceGeneratorInterface {
         collaborator's own exception has no way to carry.
       </p>
       <p>
-        <code>OAuth1Exception</code> also carries <code>getBaseStringSha256(): ?string</code> -
-        the SHA-256 hash of the signature base string <code>RequestVerifier</code>/
-        <code>RequestSigner</code>'s own <code>baseString()</code> already built for this call,
-        when this failure happened after that build succeeded. It is null when no base string was
-        ever built (a malformed URL) or when the failure was caught before <code>baseString()</code>
-        ran at all (a missing parameter, an unsupported version/method, a mismatched consumer key,
-        a malformed or out-of-tolerance timestamp). This is the one piece of diagnostic data worth
-        keeping past the happy path - see <a href="#Logging">Logging</a> for why it is never
-        written to a log line.
+        <code>SigningException</code> and <code>RequestVerificationException</code> each also
+        carry their own <code>getBaseStringSha256(): ?string</code> - deliberately not hoisted
+        onto <code>OAuth1Exception</code> alongside <code>getConsumerKey()</code>, the same way
+        <code>getReason()</code> stays on <code>RequestVerificationException</code> alone.
+        <code>getConsumerKey()</code> is a universal question every failure in this library has
+        some answer to; a base string hash is not - it is an artifact of exactly how
+        <code>RequestVerifier</code>/<code>RequestSigner</code>'s own <code>baseString()</code>
+        happen to be implemented today, meaningless for a failure (a malformed URL, a
+        misconfigured factory) that never touches one at all. It is the SHA-256 hash
+        <code>baseString()</code> already built for this call, when this failure happened after
+        that build succeeded - null on a <code>RequestVerificationException</code> for every
+        <code>VerificationFailureReason</code> other than InvalidSignature/NonceReplayed (each of
+        those is caught before <code>baseString()</code> ever runs), and null on a
+        <code>SigningException</code> for a malformed URL or <code>SignatureBaseString::build()</code>
+        itself failing (no base string ever existed to hash either way). This is the one piece of
+        diagnostic data worth keeping past the happy path - see <a href="#Logging">Logging</a> for
+        why it is never written to a log line.
       </p>
       <table>
         <thead><tr><th>Exception</th><th>Thrown when</th><th>Carries</th></tr></thead>
         <tbody>
-          <tr><td><code>OAuth1Exception</code></td><td>Base class for every exception below. Never thrown directly.</td><td><code>getConsumerKey()</code>, <code>getBaseStringSha256()</code></td></tr>
+          <tr><td><code>OAuth1Exception</code></td><td>Base class for every exception below. Never thrown directly.</td><td><code>getConsumerKey()</code></td></tr>
           <tr><td><code>SigningException</code></td><td>A signer or verifier cannot even attempt a signature - a malformed URL with no scheme/host, an unreadable RSA key, or <code>openssl</code> itself rejecting the input.</td><td><code>getConsumerKey()</code>, <code>getBaseStringSha256()</code></td></tr>
           <tr><td><code>RequestVerificationException</code></td><td>A request fails verification for any of the reasons <a href="#VerificationFailureReason"><code>VerificationFailureReason</code></a> lists.</td><td><code>getConsumerKey()</code>, <code>getBaseStringSha256()</code>, <code>getReason(): VerificationFailureReason</code></td></tr>
         </tbody>
