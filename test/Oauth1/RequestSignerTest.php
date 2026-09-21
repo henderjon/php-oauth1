@@ -103,7 +103,10 @@ class RequestSignerTest extends TestCase {
 		$debug = $logger->recordsAt('debug');
 		$this->assertCount(2, $debug);
 		$this->assertSame('oauth1.signature_base_string_built', $debug[0]['message']);
-		$this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $debug[0]['context']['base_string_sha256']);
+		// No base_string_sha256 here - see RequestVerifierTest's matching assertion and
+		// OAuth1Exception::getBaseStringSha256(). It fires on every call, success included, so
+		// this event stays a bare trace like every other debug line.
+		$this->assertArrayNotHasKey('base_string_sha256', $debug[0]['context']);
 		$this->assertSame('oauth1.request_signed', $debug[1]['message']);
 		$this->assertSame('key', $debug[1]['context']['consumer_key']);
 		$this->assertSame([], $logger->recordsAboveDebug());
@@ -172,6 +175,8 @@ class RequestSignerTest extends TestCase {
 			$this->assertSame('key', $exception->getConsumerKey());
 			$this->assertInstanceOf(SigningException::class, $exception->getPrevious());
 			$this->assertNull($exception->getPrevious()->getConsumerKey());
+			// SignatureBaseString::build() itself failed - there is no base string to hash.
+			$this->assertNull($exception->getBaseStringSha256());
 
 			// The exception thrown and the exception logged must be the same instance - not a
 			// stale, unwrapped one whose own getConsumerKey() would contradict this same log

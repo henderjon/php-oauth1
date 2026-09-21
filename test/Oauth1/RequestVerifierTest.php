@@ -62,7 +62,10 @@ class RequestVerifierTest extends TestCase {
 		$debug = $logger->recordsAt('debug');
 		$this->assertCount(2, $debug);
 		$this->assertSame('oauth1.signature_base_string_built', $debug[0]['message']);
-		$this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $debug[0]['context']['base_string_sha256']);
+		// No base_string_sha256 here - it fires on every call, success included, so the hash
+		// itself lives on the exception a failed call throws instead. See
+		// OAuth1Exception::getBaseStringSha256().
+		$this->assertArrayNotHasKey('base_string_sha256', $debug[0]['context']);
 		$this->assertSame('oauth1.request_verified', $debug[1]['message']);
 		$this->assertSame('key', $debug[1]['context']['consumer_key']);
 		$this->assertSame([], $logger->recordsAboveDebug());
@@ -80,6 +83,10 @@ class RequestVerifierTest extends TestCase {
 		$this->assertSame(VerificationFailureReason::InvalidSignature, $exception->getReason());
 		$this->assertLoggedError($logger, VerificationFailureReason::InvalidSignature, true);
 		$this->assertSame('key', $exception->getConsumerKey());
+		// The base string was already built (and its hash withheld from the debug log above)
+		// by the time the signature check itself fails - a caller comparing what two parties
+		// computed reads it off the exception, never off a log line.
+		$this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $exception->getBaseStringSha256());
 	}
 
 	public function testVerifyRejectsAReplayedNonce(): void {
@@ -96,6 +103,7 @@ class RequestVerifierTest extends TestCase {
 		} catch ( RequestVerificationException $exception ) {
 			$this->assertSame(VerificationFailureReason::NonceReplayed, $exception->getReason());
 			$this->assertLoggedError($logger, VerificationFailureReason::NonceReplayed, true);
+			$this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $exception->getBaseStringSha256());
 		}
 	}
 
@@ -224,6 +232,9 @@ class RequestVerifierTest extends TestCase {
 			$this->assertFalse($errors[0]['context']['security_relevant']);
 			$this->assertSame('key', $exception->getConsumerKey());
 			$this->assertSame($exception, $errors[0]['context']['exception']);
+			// The base string had already been built successfully before the nonce claim
+			// itself failed - the hash survives the rewrap.
+			$this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $exception->getBaseStringSha256());
 		}
 	}
 
@@ -321,6 +332,8 @@ class RequestVerifierTest extends TestCase {
 
 		$this->assertSame(VerificationFailureReason::MissingParameter, $exception->getReason());
 		$this->assertLoggedError($logger, VerificationFailureReason::MissingParameter, false);
+		// A missing parameter is caught before the base string is ever built - nothing to hash.
+		$this->assertNull($exception->getBaseStringSha256());
 	}
 
 	public function testVerifyLogsAnErrorAndRethrowsForAMalformedUrl(): void {
@@ -343,6 +356,8 @@ class RequestVerifierTest extends TestCase {
 			$this->assertInstanceOf(SigningException::class, $exception->getPrevious());
 			$this->assertNull($exception->getPrevious()->getConsumerKey());
 			$this->assertSame($exception, $errors[0]['context']['exception']);
+			// SignatureBaseString::build() itself failed - there is no base string to hash.
+			$this->assertNull($exception->getBaseStringSha256());
 		}
 	}
 

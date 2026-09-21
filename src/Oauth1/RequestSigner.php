@@ -124,14 +124,12 @@ final class RequestSigner {
 			throw $rewrapped;
 		}
 
-		// See RequestVerifier::baseString()'s matching comment: this logs a hash, not the raw
-		// base string, since $requestParameters is caller-supplied and this class has no way
-		// to know whether it carries PII (Basic LTI's own launch parameters do). The hash still
-		// answers the one question this log line exists for - do two parties' base strings
-		// match - without ever putting their content into a log store.
+		// No base_string_sha256 here - see RequestVerifier::baseString()'s matching comment and
+		// OAuth1Exception::getBaseStringSha256(). This event fires on every call, success
+		// included, so it stays a bare trace like every other debug line in this class; the
+		// hash itself is only worth keeping once something has already failed.
 		$this->logger->debug('oauth1.signature_base_string_built', [
 			'consumer_key' => $credentials->consumerKey,
-			'base_string_sha256' => hash('sha256', $baseString),
 		]);
 
 		return $baseString;

@@ -16,12 +16,23 @@ class RequestVerificationException extends OAuth1Exception {
 		private readonly VerificationFailureReason $reason,
 		?string $consumerKey = null,
 		?\Throwable $previous = null,
+		private readonly ?string $baseStringSha256 = null,
 	) {
 		parent::__construct($message, $consumerKey, $previous);
 	}
 
 	public function getReason(): VerificationFailureReason {
 		return $this->reason;
+	}
+
+	/**
+	 * The SHA-256 hash RequestVerifier's own `baseString()` already computed for this call, when
+	 * this failure (InvalidSignature, NonceReplayed) happened after that computation succeeded -
+	 * null for every other VerificationFailureReason, since each of those is caught before
+	 * `baseString()` ever runs.
+	 */
+	public function getBaseStringSha256(): ?string {
+		return $this->baseStringSha256;
 	}
 
 }
