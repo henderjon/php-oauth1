@@ -13,9 +13,18 @@ final class SignedRequest {
 	 * @param array<string,string> $oauthParameters Every `oauth_*` parameter this request
 	 *                                               carries, keyed by name, `oauth_signature`
 	 *                                               included.
+	 * @param ?string $baseStringSha256 The SHA-256 hash of the signature base string
+	 *                                  RequestSigner::sign() built for this request - null for
+	 *                                  PLAINTEXT, which never builds one at all. See
+	 *                                  RequestSigner::sign()'s own comment for why this rides on
+	 *                                  the object the call already returns rather than a log
+	 *                                  line, mirroring RequestVerificationException/
+	 *                                  SigningException's own getBaseStringSha256() on the
+	 *                                  verify side.
 	 */
 	public function __construct(
 		public readonly array $oauthParameters,
+		public readonly ?string $baseStringSha256 = null,
 	) {
 	}
 

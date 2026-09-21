@@ -563,12 +563,15 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
           the base string itself, only a SHA-256 hash of it - and even that hash is never logged
           on a successful call. <code>RequestVerifier</code>/<code>RequestSigner</code>'s
           <code>oauth1.signature_base_string_built</code> debug line is a bare trace, like every
-          other happy-path <code>debug</code> line - the hash itself only becomes reachable via
-          <code>getBaseStringSha256()</code> on a
+          other happy-path <code>debug</code> line - the hash itself only becomes reachable off
+          the object each side's call already produces: <code>getBaseStringSha256()</code> on a
           <code>RequestVerificationException</code>/<code>SigningException</code> instance thrown
-          after the base string this failure concerns was already built. A caller comparing what
-          two parties computed reads it off a caught exception on an actual failure, never off a
-          debug log line that would otherwise carry it on every request, success included - see
+          after the base string this failure concerns was already built, on the verify side; the
+          <code>$baseStringSha256</code> property on <a href="#SignedRequest"><code>SignedRequest</code></a>/<a href="#LaunchRequest"><code>LaunchRequest</code></a>,
+          on the build side, since <code>RequestSigner::sign()</code> essentially never fails
+          once a base string exists (see that type's own docblock). A caller comparing what two
+          parties computed reads it off the object it already has either way, never off a debug
+          log line that would otherwise carry it on every request, success included - see
           <a href="#Oauth1Exceptions">Exceptions</a>.
         </li>
         <li>
@@ -885,11 +888,22 @@ $signed-&gt;oauthParameters['oauth_signature']; <span class="comment">// 'OB33pY
 
     public function __construct(
         public readonly array $oauthParameters,
+        public readonly ?string $baseStringSha256 = null,
     )
 
     public function authorizationHeaderValue(?string $realm = null): string
 
 }</div>
+      <p>
+        <code>$baseStringSha256</code> is the SHA-256 hash of the signature base string
+        <code>RequestSigner::sign()</code> built for this request - null for PLAINTEXT, which
+        never builds one at all. It exists for the same reason
+        <code>RequestVerificationException</code>/<code>SigningException</code> carry the same
+        hash on the verify side (see <a href="#Oauth1Exceptions">Exceptions</a>): a caller
+        comparing what two parties computed reads it here, off the object <code>sign()</code>
+        already returns, rather than off a debug log line that would otherwise have to carry it
+        on every call, success included.
+      </p>
       <h3 id="SignedRequest.authorizationHeaderValue">authorizationHeaderValue<a class="section-anchor" href="#SignedRequest.authorizationHeaderValue" aria-label="Link to this section">&para;</a></h3>
       <p>RFC 5849 &sect;3.5.1: the OAuth <code>Authorization</code> header value, each name and value encoded per &sect;3.6 and quoted.</p>
       <pre>$signed-&gt;authorizationHeaderValue();
@@ -1326,6 +1340,7 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
     public function __construct(
         public readonly string $launchUrl,
         public readonly array $parameters,
+        public readonly ?string $baseStringSha256 = null,
     )
 
 }</div>
@@ -1338,6 +1353,14 @@ $launch-&gt;parameters['oauth_signature']; <span class="comment">// 'TPFPK4u3Nwm
         consuming application's job - see <a href="https://github.com/henderjon/php-oauth1/tree/dev/example">example/</a>
         for what that looks like in practice.
       </div>
+      <p>
+        <code>$baseStringSha256</code> is carried straight through from the underlying
+        <a href="#SignedRequest"><code>Oauth1\SignedRequest</code></a> - see that type's own
+        section for what it is. Never actually null for a launch this class builds in practice,
+        since <a href="#LaunchRequestBuilderFactory"><code>LaunchRequestBuilderFactory</code></a>
+        hard-wires HMAC-SHA1, never PLAINTEXT; nullable only because it mirrors
+        <code>SignedRequest</code>'s own type.
+      </p>
       <p class="back-to-index"><a href="#index">↑ back to index</a></p>
     </div>
 

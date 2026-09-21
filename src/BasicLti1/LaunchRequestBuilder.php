@@ -88,11 +88,15 @@ final class LaunchRequestBuilder {
 			'resource_link_id' => $launchParameters[Launch::RESOURCE_LINK_ID_PARAM],
 		]);
 
-		return new LaunchRequest($launchUrl, [
-			...$launchParameters,
-			...$signed->oauthParameters,
-			'oauth_callback' => 'about:blank',
-		]);
+		return new LaunchRequest(
+			$launchUrl,
+			[
+				...$launchParameters,
+				...$signed->oauthParameters,
+				'oauth_callback' => 'about:blank',
+			],
+			$signed->baseStringSha256,
+		);
 	}
 
 	private function isValidResourceLinkId( mixed $value ): bool {

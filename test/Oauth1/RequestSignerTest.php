@@ -82,6 +82,29 @@ class RequestSignerTest extends TestCase {
 		$this->assertSame('secret&tokensecret', $signed->oauthParameters['oauth_signature']);
 	}
 
+	/**
+	 * SignedRequest::$baseStringSha256 is this call's own equivalent of
+	 * RequestVerificationException/SigningException::getBaseStringSha256() on the verify side -
+	 * a caller reads it off the object sign() already returns, never off a log line.
+	 */
+	public function testSignAttachesTheBaseStringHashToTheSignedRequest(): void {
+		$signed = $this->signer()->sign('POST', 'http://example.com/request', new Credentials('key', 'secret'));
+
+		$this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $signed->baseStringSha256);
+	}
+
+	/**
+	 * PLAINTEXT never builds a base string at all - see SignatureMethod::Plaintext's own
+	 * handling in sign(). There is nothing to hash.
+	 */
+	public function testSignWithPlaintextLeavesTheBaseStringHashNull(): void {
+		$signer = new RequestSigner(new PlaintextSigner);
+
+		$signed = $signer->sign('POST', 'http://example.com/request', new Credentials('key', 'secret'));
+
+		$this->assertNull($signed->baseStringSha256);
+	}
+
 	public function testSignWithPlaintextLogsAnAlertEveryTime(): void {
 		$logger = new ArrayLogger;
 		$signer = new RequestSigner(new PlaintextSigner, logger: $logger);
