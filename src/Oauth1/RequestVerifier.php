@@ -152,9 +152,10 @@ final class RequestVerifier {
 
 		// Computed once here, not inside fail()/claimNonce(): both need the same hash of the
 		// same $baseString this call already built, and null for PLAINTEXT, which never builds
-		// one at all. See OAuth1Exception::getBaseStringSha256() for why this exists - a caller
-		// reads it off a caught exception, on failure only, rather than off a debug log line that
-		// would otherwise carry it on every successful call too.
+		// one at all. See RequestVerificationException/SigningException's own
+		// getBaseStringSha256() for why this exists - a caller reads it off a caught exception,
+		// on failure only, rather than off a debug log line that would otherwise carry it on
+		// every successful call too.
 		$baseStringSha256 = $isPlaintext ? null : hash('sha256', $baseString);
 
 		if ( ! $this->verifier->verify($baseString, $credentials, $signature) ) {
@@ -285,11 +286,12 @@ final class RequestVerifier {
 			throw $rewrapped;
 		}
 
-		// No base_string_sha256 here - see OAuth1Exception::getBaseStringSha256(). This event
-		// fires on every call, success included, so carrying the hash here would broadcast it
-		// on the happy path too, exactly the volume-vs-loss tradeoff a caller filtering by
-		// level cannot get out of. verify() attaches the same hash to the exception itself,
-		// computed once and only reachable once something has already failed.
+		// No base_string_sha256 here - see RequestVerificationException/SigningException's own
+		// getBaseStringSha256(). This event fires on every call, success included, so carrying
+		// the hash here would broadcast it on the happy path too, exactly the volume-vs-loss
+		// tradeoff a caller filtering by level cannot get out of. verify() attaches the same
+		// hash to the exception itself, computed once and only reachable once something has
+		// already failed.
 		$this->logger->debug('oauth1.signature_base_string_built', [
 			'consumer_key' => $this->loggableConsumerKey($consumerKey),
 		]);

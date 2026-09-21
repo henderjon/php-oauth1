@@ -85,6 +85,19 @@ class LaunchRequestBuilderTest extends TestCase {
 		}
 	}
 
+	/**
+	 * LaunchRequest::$baseStringSha256 is carried straight through from the underlying
+	 * Oauth1\SignedRequest - see LaunchRequest's own docblock for why this is never actually
+	 * null in practice (Basic LTI is hard-wired to HMAC-SHA1, never PLAINTEXT).
+	 */
+	public function testBuildCarriesTheBaseStringHashThroughFromTheSignedRequest(): void {
+		$builder = new LaunchRequestBuilder(new RequestSigner(new HmacSha1Signer));
+
+		$launch = $builder->build('http://example.com/launch', new Credentials('key', 'secret'), [ 'resource_link_id' => 'link-1' ]);
+
+		$this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $launch->baseStringSha256);
+	}
+
 	public function testBuildOverridesACallerSuppliedMessageTypeOrVersion(): void {
 		$builder = new LaunchRequestBuilder(new RequestSigner(new HmacSha1Signer));
 

@@ -72,7 +72,15 @@ final class RequestSigner {
 
 		$oauthParameters['oauth_version'] = '1.0';
 
-		$baseString = $this->signer->method() === SignatureMethod::Plaintext ? '' : $this->baseString($httpMethod, $url, $requestParameters, $oauthParameters, $credentials);
+		$isPlaintext = $this->signer->method() === SignatureMethod::Plaintext;
+		$baseString  = $isPlaintext ? '' : $this->baseString($httpMethod, $url, $requestParameters, $oauthParameters, $credentials);
+
+		// null for PLAINTEXT, which never builds a base string at all - see SignedRequest's own
+		// docblock. Computed once here, not logged: a caller reads it off the SignedRequest this
+		// call already returns, mirroring how RequestVerificationException/SigningException
+		// carry the same hash on the verify side, rather than off this class's own
+		// oauth1.signature_base_string_built debug line, which never carries it.
+		$baseStringSha256 = $isPlaintext ? null : hash('sha256', $baseString);
 
 		$oauthParameters['oauth_signature'] = $this->signer->sign($baseString, $credentials);
 
@@ -81,7 +89,7 @@ final class RequestSigner {
 			'signature_method' => $this->signer->method()->value,
 		]);
 
-		return new SignedRequest($oauthParameters);
+		return new SignedRequest($oauthParameters, $baseStringSha256);
 	}
 
 	/**
@@ -124,10 +132,11 @@ final class RequestSigner {
 			throw $rewrapped;
 		}
 
-		// No base_string_sha256 here - see RequestVerifier::baseString()'s matching comment and
-		// OAuth1Exception::getBaseStringSha256(). This event fires on every call, success
-		// included, so it stays a bare trace like every other debug line in this class; the
-		// hash itself is only worth keeping once something has already failed.
+		// No base_string_sha256 here - see RequestVerifier::baseString()'s matching comment.
+		// This event fires on every call, success included, so it stays a bare trace like
+		// every other debug line in this class; the hash itself lives on SignedRequest instead
+		// - see sign()'s own comment for why a caller reads it off the object this call
+		// naturally returns, not off this log line.
 		$this->logger->debug('oauth1.signature_base_string_built', [
 			'consumer_key' => $credentials->consumerKey,
 		]);

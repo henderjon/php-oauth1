@@ -27,4 +27,16 @@ class SignedRequestTest extends TestCase {
 		);
 	}
 
+	public function testBaseStringSha256ReturnsTheConstructedValue(): void {
+		$signed = new SignedRequest([ 'oauth_consumer_key' => 'key' ], 'deadbeef');
+
+		$this->assertSame('deadbeef', $signed->baseStringSha256);
+	}
+
+	public function testBaseStringSha256DefaultsToNull(): void {
+		$signed = new SignedRequest([ 'oauth_consumer_key' => 'key' ]);
+
+		$this->assertNull($signed->baseStringSha256);
+	}
+
 }
