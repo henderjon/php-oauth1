@@ -27,4 +27,16 @@ class OAuth1ExceptionTest extends TestCase {
 		$this->assertSame($previous, $exception->getPrevious());
 	}
 
+	public function testGetBaseStringSha256ReturnsTheConstructedValue(): void {
+		$exception = new OAuth1Exception('something failed', baseStringSha256: 'deadbeef');
+
+		$this->assertSame('deadbeef', $exception->getBaseStringSha256());
+	}
+
+	public function testGetBaseStringSha256DefaultsToNull(): void {
+		$exception = new OAuth1Exception('something failed');
+
+		$this->assertNull($exception->getBaseStringSha256());
+	}
+
 }

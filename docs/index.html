@@ -559,12 +559,17 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
           <code>RequestSigner</code>/<code>RequestVerifier</code> are generic - unlike
           <code>Oidc\TokenEndpointClient</code>, which can name its own fixed, small set of
           sensitive parameter keys to redact, this library has no way to know which of an
-          arbitrary caller's parameters are sensitive. Rather than guess, the
-          <code>oauth1.signature_base_string_built</code> debug line logs
-          <code>base_string_sha256</code> - a SHA-256 hash, not the string itself. That still
-          answers the one question the line exists for (did two parties build the identical base
-          string, checked by comparing the hash across their two logs) without the content, PII
-          included, ever landing in a log store.
+          arbitrary caller's parameters are sensitive. Rather than guess, this library never logs
+          the base string itself, only a SHA-256 hash of it - and even that hash is never logged
+          on a successful call. <code>RequestVerifier</code>/<code>RequestSigner</code>'s
+          <code>oauth1.signature_base_string_built</code> debug line is a bare trace, like every
+          other happy-path <code>debug</code> line - the hash itself only becomes reachable via
+          <code>Oauth1\Exceptions\OAuth1Exception::getBaseStringSha256()</code>, on
+          <code>RequestVerificationException</code>/<code>SigningException</code> instances thrown
+          after the base string this failure concerns was already built. A caller comparing what
+          two parties computed reads it off a caught exception on an actual failure, never off a
+          debug log line that would otherwise carry it on every request, success included - see
+          <a href="#Oauth1Exceptions">Exceptions</a>.
         </li>
         <li>
           <strong>An unreadable RSA key.</strong> <code>RsaSha1Signer</code>/
@@ -615,8 +620,8 @@ $signed = (new RequestSignerFactory())-&gt;forMethod(SignatureMethod::HmacSha1)
       <table>
         <thead><tr><th>Class</th><th>Logs</th></tr></thead>
         <tbody>
-          <tr><td><a href="#RequestSigner"><code>RequestSigner</code></a></td><td><code>debug</code> once the base string's hash is computed and again on success; <code>debug</code> when a caller-supplied request parameter collides with a reserved <code>oauth_*</code> one and is silently overridden; <code>alert</code> for PLAINTEXT; <code>error</code> (<code>false</code>) for a malformed URL.</td></tr>
-          <tr><td><a href="#RequestVerifier"><code>RequestVerifier</code></a></td><td><code>debug</code> once the base string's hash is recomputed and again on success; <code>alert</code> for PLAINTEXT; <code>error</code> for every <a href="#VerificationFailureReason"><code>VerificationFailureReason</code></a> (<code>true</code> for InvalidSignature/NonceReplayed, <code>false</code> otherwise) and for a malformed URL - <code>oauth_consumer_key</code> length-capped in every one of these log lines, never in the exception thrown alongside it.</td></tr>
+          <tr><td><a href="#RequestSigner"><code>RequestSigner</code></a></td><td><code>debug</code> once the base string is built and again on success (neither carries the hash - see <a href="#Logging">Logging</a>); <code>debug</code> when a caller-supplied request parameter collides with a reserved <code>oauth_*</code> one and is silently overridden; <code>alert</code> for PLAINTEXT; <code>error</code> (<code>false</code>) for a malformed URL.</td></tr>
+          <tr><td><a href="#RequestVerifier"><code>RequestVerifier</code></a></td><td><code>debug</code> once the base string is built and again on success (neither carries the hash - it travels on the exception instead, when one is thrown); <code>alert</code> for PLAINTEXT; <code>error</code> for every <a href="#VerificationFailureReason"><code>VerificationFailureReason</code></a> (<code>true</code> for InvalidSignature/NonceReplayed, <code>false</code> otherwise) and for a malformed URL - <code>oauth_consumer_key</code> length-capped in every one of these log lines, never in the exception thrown alongside it.</td></tr>
           <tr><td><a href="#RsaSha1Signer"><code>RsaSha1Signer</code></a> / <a href="#RsaSha1Verifier"><code>RsaSha1Verifier</code></a></td><td><code>debug</code> once the key loads/signs; <code>error</code> (<code>false</code>) for an unreadable key, with a header-plus-footer summary of it.</td></tr>
           <tr><td><a href="#RequestSignerFactory"><code>RequestSignerFactory</code></a> / <a href="#RequestVerifierFactory"><code>RequestVerifierFactory</code></a></td><td><code>debug</code> naming the signature method assembled; <code>error</code> (<code>false</code>) for RSA-SHA1 requested with no key.</td></tr>
           <tr><td><a href="#LaunchRequestBuilder"><code>LaunchRequestBuilder</code></a> / <a href="#LaunchVerifier"><code>LaunchVerifier</code></a></td><td><code>debug</code> on success (<code>resource_link_id</code> length-capped in <code>LaunchVerifier</code>); <code>debug</code> (builder only) when a caller-supplied <code>lti_message_type</code>/<code>lti_version</code> collides with the fixed value and is overridden; <code>error</code> (<code>false</code>) for a missing/invalid Basic LTI parameter.</td></tr>
@@ -1194,12 +1199,23 @@ final class RandomNonceGenerator implements NonceGeneratorInterface {
         pattern <code>Oidc\OpenIDConnectClient</code> uses to add an ID token a lower-level
         collaborator's own exception has no way to carry.
       </p>
+      <p>
+        <code>OAuth1Exception</code> also carries <code>getBaseStringSha256(): ?string</code> -
+        the SHA-256 hash of the signature base string <code>RequestVerifier</code>/
+        <code>RequestSigner</code>'s own <code>baseString()</code> already built for this call,
+        when this failure happened after that build succeeded. It is null when no base string was
+        ever built (a malformed URL) or when the failure was caught before <code>baseString()</code>
+        ran at all (a missing parameter, an unsupported version/method, a mismatched consumer key,
+        a malformed or out-of-tolerance timestamp). This is the one piece of diagnostic data worth
+        keeping past the happy path - see <a href="#Logging">Logging</a> for why it is never
+        written to a log line.
+      </p>
       <table>
         <thead><tr><th>Exception</th><th>Thrown when</th><th>Carries</th></tr></thead>
         <tbody>
-          <tr><td><code>OAuth1Exception</code></td><td>Base class for every exception below. Never thrown directly.</td><td><code>getConsumerKey()</code></td></tr>
-          <tr><td><code>SigningException</code></td><td>A signer or verifier cannot even attempt a signature - a malformed URL with no scheme/host, an unreadable RSA key, or <code>openssl</code> itself rejecting the input.</td><td><code>getConsumerKey()</code></td></tr>
-          <tr><td><code>RequestVerificationException</code></td><td>A request fails verification for any of the reasons <a href="#VerificationFailureReason"><code>VerificationFailureReason</code></a> lists.</td><td><code>getConsumerKey()</code>, <code>getReason(): VerificationFailureReason</code></td></tr>
+          <tr><td><code>OAuth1Exception</code></td><td>Base class for every exception below. Never thrown directly.</td><td><code>getConsumerKey()</code>, <code>getBaseStringSha256()</code></td></tr>
+          <tr><td><code>SigningException</code></td><td>A signer or verifier cannot even attempt a signature - a malformed URL with no scheme/host, an unreadable RSA key, or <code>openssl</code> itself rejecting the input.</td><td><code>getConsumerKey()</code>, <code>getBaseStringSha256()</code></td></tr>
+          <tr><td><code>RequestVerificationException</code></td><td>A request fails verification for any of the reasons <a href="#VerificationFailureReason"><code>VerificationFailureReason</code></a> lists.</td><td><code>getConsumerKey()</code>, <code>getBaseStringSha256()</code>, <code>getReason(): VerificationFailureReason</code></td></tr>
         </tbody>
       </table>
       <div class="alert-box">Exception messages here are safe to log but are not written for end users.</div>

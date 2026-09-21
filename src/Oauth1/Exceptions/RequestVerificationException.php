@@ -16,8 +16,9 @@ class RequestVerificationException extends OAuth1Exception {
 		private readonly VerificationFailureReason $reason,
 		?string $consumerKey = null,
 		?\Throwable $previous = null,
+		?string $baseStringSha256 = null,
 	) {
-		parent::__construct($message, $consumerKey, $previous);
+		parent::__construct($message, $consumerKey, $previous, $baseStringSha256);
 	}
 
 	public function getReason(): VerificationFailureReason {

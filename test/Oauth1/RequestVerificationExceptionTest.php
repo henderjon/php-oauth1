@@ -20,4 +20,14 @@ class RequestVerificationExceptionTest extends TestCase {
 		$this->assertSame('the-consumer-key', $exception->getConsumerKey());
 	}
 
+	public function testGetBaseStringSha256IsInheritedFromTheBaseException(): void {
+		$exception = new RequestVerificationException(
+			'signature does not match',
+			VerificationFailureReason::InvalidSignature,
+			baseStringSha256: 'deadbeef',
+		);
+
+		$this->assertSame('deadbeef', $exception->getBaseStringSha256());
+	}
+
 }

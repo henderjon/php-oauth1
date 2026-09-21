@@ -150,14 +150,21 @@ final class RequestVerifier {
 			? ''
 			: $this->baseString($httpMethod, $url, $parameters, $oauthConsumerKey);
 
+		// Computed once here, not inside fail()/claimNonce(): both need the same hash of the
+		// same $baseString this call already built, and null for PLAINTEXT, which never builds
+		// one at all. See OAuth1Exception::getBaseStringSha256() for why this exists - a caller
+		// reads it off a caught exception, on failure only, rather than off a debug log line that
+		// would otherwise carry it on every successful call too.
+		$baseStringSha256 = $isPlaintext ? null : hash('sha256', $baseString);
+
 		if ( ! $this->verifier->verify($baseString, $credentials, $signature) ) {
-			$this->fail('Signature does not match', VerificationFailureReason::InvalidSignature, true, $oauthConsumerKey);
+			$this->fail('Signature does not match', VerificationFailureReason::InvalidSignature, true, $oauthConsumerKey, $baseStringSha256);
 		}
 
 		// Only claim the nonce once the signature above is known genuine - see this class's own
 		// docblock for why claiming any earlier would be a denial-of-service vector.
 		if ( ! $isPlaintext ) {
-			$this->claimNonce($parameters, $credentials);
+			$this->claimNonce($parameters, $credentials, $baseStringSha256);
 		}
 
 		$this->logger->debug('oauth1.request_verified', [ 'consumer_key' => $this->loggableConsumerKey($oauthConsumerKey) ]);
@@ -205,7 +212,7 @@ final class RequestVerifier {
 	/**
 	 * @param array<string,string|list<string>> $parameters
 	 */
-	private function claimNonce( array $parameters, Credentials $credentials ): void {
+	private function claimNonce( array $parameters, Credentials $credentials, ?string $baseStringSha256 ): void {
 		$timestamp = $this->requireScalarParameter($parameters, 'oauth_timestamp', $credentials->consumerKey);
 		$nonce     = $this->requireScalarParameter($parameters, 'oauth_nonce', $credentials->consumerKey);
 
@@ -230,7 +237,7 @@ final class RequestVerifier {
 			// rather than returned as `false` so it cannot be conflated with NonceReplayed below
 			// and logged as security_relevant: true, the same mistake fixed once already for
 			// RsaSha1Verifier's openssl_verify() -1 case.
-			$rewrapped = new SigningException($exception->getMessage(), $credentials->consumerKey, $exception);
+			$rewrapped = new SigningException($exception->getMessage(), $credentials->consumerKey, $exception, $baseStringSha256);
 
 			$this->logger->error('oauth1.verifying_failed', [
 				'consumer_key' => $this->loggableConsumerKey($credentials->consumerKey),
@@ -242,7 +249,7 @@ final class RequestVerifier {
 		}
 
 		if ( ! $claimed ) {
-			$this->fail('Nonce has already been used', VerificationFailureReason::NonceReplayed, true, $credentials->consumerKey);
+			$this->fail('Nonce has already been used', VerificationFailureReason::NonceReplayed, true, $credentials->consumerKey, $baseStringSha256);
 		}
 	}
 
@@ -278,18 +285,13 @@ final class RequestVerifier {
 			throw $rewrapped;
 		}
 
-		// The base string can carry values a caller supplied - Basic LTI's own launch
-		// parameters include PII (lis_person_name_full, lis_person_contact_email_primary) -
-		// and this class has no way to know which, if any, of an arbitrary caller's
-		// $requestParameters are sensitive the way Oidc\TokenEndpointClient's own
-		// SENSITIVE_PARAM_KEYS can, since that list is only possible because OIDC defines a
-        // fixed parameter vocabulary this library owns. A hash preserves the one thing this
-		// log line exists for - telling whether two parties built the identical base string,
-		// by comparing this value across their two logs - without ever putting the content
-		// itself, PII included, into a log store.
+		// No base_string_sha256 here - see OAuth1Exception::getBaseStringSha256(). This event
+		// fires on every call, success included, so carrying the hash here would broadcast it
+		// on the happy path too, exactly the volume-vs-loss tradeoff a caller filtering by
+		// level cannot get out of. verify() attaches the same hash to the exception itself,
+		// computed once and only reachable once something has already failed.
 		$this->logger->debug('oauth1.signature_base_string_built', [
 			'consumer_key' => $this->loggableConsumerKey($consumerKey),
-			'base_string_sha256' => hash('sha256', $baseString),
 		]);
 
 		return $baseString;
@@ -317,7 +319,7 @@ final class RequestVerifier {
 		return $value;
 	}
 
-	private function fail( string $message, VerificationFailureReason $reason, bool $securityRelevant, ?string $consumerKey ): never {
+	private function fail( string $message, VerificationFailureReason $reason, bool $securityRelevant, ?string $consumerKey, ?string $baseStringSha256 = null ): never {
 		$this->logger->error('oauth1.verification_failed', [
 			'reason' => $reason->name,
 			'consumer_key' => $this->loggableConsumerKey($consumerKey),
@@ -329,7 +331,12 @@ final class RequestVerifier {
 		// store, say); only the log line just above is length-capped. See this class's own
 		// docblock for why only the logged/thrown-*to-the-log* copy is ever capped, never what
 		// calling code actually receives.
-		throw new RequestVerificationException($message, $reason, $consumerKey);
+		//
+		// $baseStringSha256 defaults to null: every fail() call site above verify()'s own
+		// InvalidSignature/NonceReplayed reasons happens before baseString() ever runs (a
+		// missing parameter, an unsupported version/method, a mismatched consumer key, a
+		// malformed or out-of-tolerance timestamp), so there is no hash yet to attach.
+		throw new RequestVerificationException($message, $reason, $consumerKey, baseStringSha256: $baseStringSha256);
 	}
 
 	/**
